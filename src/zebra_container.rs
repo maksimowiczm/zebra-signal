@@ -7,17 +7,26 @@ use std::sync::{Arc, Mutex};
 use tokio::sync::oneshot;
 use tokio::time::sleep;
 
-const SESSION_TIMEOUT: u64 = 30;
-const SOCKET_TIMEOUT: u64 = 60;
-
 pub struct Connection {
     socket: Option<WebSocket>,
     cancel_tx: oneshot::Sender<()>,
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct ZebraContainer {
     connections: Arc<Mutex<HashMap<String, Connection>>>,
+    session_timeout: u64,
+    socket_timeout: u64,
+}
+
+impl ZebraContainer {
+    pub fn with_timeouts(session_timeout: u64, socket_timeout: u64) -> Self {
+        Self {
+            connections: Arc::new(Mutex::new(HashMap::new())),
+            session_timeout,
+            socket_timeout,
+        }
+    }
 }
 
 pub enum ConnectionError {
@@ -62,13 +71,14 @@ impl ZebraContainer {
         {
             let connections = self.connections.clone();
             let token = token.clone();
+            let timeout = self.session_timeout;
             tokio::spawn(async move {
                 tokio::select! {
                     _ = cancel => {
                         tracing::debug!("Session with token: {} pop canceled", token);
                         return;
                     }
-                    _ = tokio::time::sleep(std::time::Duration::from_secs(SESSION_TIMEOUT)) => {
+                    _ = tokio::time::sleep(std::time::Duration::from_secs(timeout)) => {
                         tracing::debug!("Session with token: {} timed out", token);
                     }
                 }
@@ -113,21 +123,21 @@ impl ZebraContainer {
         tracing::debug!("Relaying sockets");
         let connection = connections.remove(&token).unwrap();
         let _ = connection.cancel_tx.send(());
-        setup_relay(connection.socket.unwrap(), socket);
+        setup_relay(connection.socket.unwrap(), socket, self.socket_timeout);
 
         Ok(())
     }
 }
 
-fn setup_relay(first: WebSocket, second: WebSocket) {
+fn setup_relay(first: WebSocket, second: WebSocket, timeout: u64) {
     let (first_tx, first_rx) = first.split();
     let (second_tx, second_rx) = second.split();
 
     let relay_first = first_rx.forward(second_tx);
     let relay_second = second_rx.forward(first_tx);
 
-    let timeout = tokio::spawn(async {
-        sleep(std::time::Duration::from_secs(SOCKET_TIMEOUT)).await;
+    let timeout = tokio::spawn(async move {
+        sleep(std::time::Duration::from_secs(timeout)).await;
     });
 
     tokio::spawn(async {

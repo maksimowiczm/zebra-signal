@@ -6,14 +6,31 @@ use axum::extract::{Query, State, WebSocketUpgrade};
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{serve, Router};
+use clap::Parser;
 use serde::Deserialize;
+use std::net::ToSocketAddrs;
 use tokio::net::TcpListener;
 use tower_http::trace::{DefaultMakeSpan, TraceLayer};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
+#[derive(Parser, Debug)]
+struct Args {
+    /// Name of the person to greet
+    #[arg(long)]
+    session_timeout: u64,
+
+    #[arg(long)]
+    socket_timeout: u64,
+
+    #[arg(long)]
+    address: String,
+}
+
 #[tokio::main]
 async fn main() {
+    let args = Args::parse();
+
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
         .with(
@@ -26,17 +43,23 @@ async fn main() {
     let app = Router::new()
         .route("/session", get(session))
         .route("/ws", get(socket))
-        .with_state(ZebraContainer::default())
+        .with_state(ZebraContainer::with_timeouts(
+            args.session_timeout,
+            args.socket_timeout,
+        ))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::default().include_headers(true)),
         );
 
-    let addr = std::env::args()
-        .nth(1)
-        .unwrap_or_else(|| "0.0.0.0:3000".to_string());
+    let address = args
+        .address
+        .to_socket_addrs()
+        .expect("Should parse address successfully")
+        .next()
+        .unwrap();
 
-    let listener = TcpListener::bind(addr)
+    let listener = TcpListener::bind(address)
         .await
         .expect("Should bind to address successfully");
 
