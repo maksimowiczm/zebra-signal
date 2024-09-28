@@ -24,9 +24,9 @@ async fn main() {
         .init();
 
     let app = Router::new()
-        .route("/", get(session))
+        .route("/session", get(session))
         .route("/ws", get(socket))
-        .with_state(ZebraContainer::new())
+        .with_state(ZebraContainer::default())
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::default().include_headers(true)),

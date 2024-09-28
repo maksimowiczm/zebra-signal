@@ -4,14 +4,20 @@ use rand::distributions::Alphanumeric;
 use rand::Rng;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use tokio::sync::oneshot;
 use tokio::time::sleep;
 
 const SESSION_TIMEOUT: u64 = 30;
 const SOCKET_TIMEOUT: u64 = 60;
 
-#[derive(Clone)]
+pub struct Connection {
+    socket: Option<WebSocket>,
+    cancel_tx: oneshot::Sender<()>,
+}
+
+#[derive(Clone, Default)]
 pub struct ZebraContainer {
-    connections: Arc<Mutex<HashMap<String, Option<WebSocket>>>>,
+    connections: Arc<Mutex<HashMap<String, Connection>>>,
 }
 
 pub enum ConnectionError {
@@ -19,12 +25,6 @@ pub enum ConnectionError {
 }
 
 impl ZebraContainer {
-    pub fn new() -> Self {
-        Self {
-            connections: Arc::new(Mutex::new(HashMap::new())),
-        }
-    }
-
     pub fn create_session(&self) -> String {
         let mut connections = self
             .connections
@@ -46,7 +46,15 @@ impl ZebraContainer {
                 .collect::<String>();
         }
 
-        connections.insert(token.clone(), None);
+        let (cancel_tx, cancel) = oneshot::channel();
+
+        connections.insert(
+            token.clone(),
+            Connection {
+                socket: None,
+                cancel_tx,
+            },
+        );
 
         tracing::debug!("Created session with token: {}", token);
 
@@ -55,9 +63,16 @@ impl ZebraContainer {
             let connections = self.connections.clone();
             let token = token.clone();
             tokio::spawn(async move {
-                sleep(std::time::Duration::from_secs(SESSION_TIMEOUT)).await;
+                tokio::select! {
+                    _ = cancel => {
+                        tracing::debug!("Session with token: {} pop canceled", token);
+                        return;
+                    }
+                    _ = tokio::time::sleep(std::time::Duration::from_secs(SESSION_TIMEOUT)) => {
+                        tracing::debug!("Session with token: {} timed out", token);
+                    }
+                }
 
-                // todo this might cause issues if connection was established and removed but another connection with same token was created
                 if connections
                     .lock()
                     .expect("No other locks should panic")
@@ -85,19 +100,20 @@ impl ZebraContainer {
             .expect("No other locks should panic");
 
         let entry = connections
-            .get(&token)
+            .get_mut(&token)
             .ok_or(ConnectionError::SessionNotFound)?;
 
         // If it is first connection with this token await for second connection
-        if entry.is_none() {
+        if entry.socket.is_none() {
             tracing::debug!("Waiting for second connection");
-            connections.insert(token.clone(), Some(socket));
+            entry.socket = Some(socket);
             return Ok(());
         }
 
         tracing::debug!("Relaying sockets");
-        let first = connections.remove(&token).unwrap().unwrap();
-        setup_relay(first, socket);
+        let connection = connections.remove(&token).unwrap();
+        let _ = connection.cancel_tx.send(());
+        setup_relay(connection.socket.unwrap(), socket);
 
         Ok(())
     }
