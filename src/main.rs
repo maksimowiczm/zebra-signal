@@ -16,14 +16,13 @@ use tracing_subscriber::util::SubscriberInitExt;
 
 #[derive(Parser, Debug)]
 struct Args {
-    /// Name of the person to greet
-    #[arg(long)]
+    #[arg(long, default_value = "30")]
     session_timeout: u64,
 
-    #[arg(long)]
+    #[arg(long, default_value = "30")]
     socket_timeout: u64,
 
-    #[arg(long)]
+    #[arg(long, default_value = "0.0.0.0:8080")]
     address: String,
 }
 
@@ -43,6 +42,7 @@ async fn main() {
     let app = Router::new()
         .route("/session", get(session))
         .route("/ws", get(socket))
+        .route("/ping", get(|| async { "pong" }))
         .with_state(ZebraContainer::with_timeouts(
             args.session_timeout,
             args.socket_timeout,
