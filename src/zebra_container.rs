@@ -2,10 +2,10 @@ use axum::extract::ws::WebSocket;
 use futures::StreamExt;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
+use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tokio::sync::oneshot;
-use tokio::time::sleep;
 
 pub struct Connection {
     socket: Option<WebSocket>,
@@ -33,8 +33,14 @@ pub enum ConnectionError {
     SessionNotFound,
 }
 
+#[derive(Serialize)]
+pub struct Session {
+    token: String,
+    expires: u64,
+}
+
 impl ZebraContainer {
-    pub fn create_session(&self) -> String {
+    pub fn create_session(&self) -> Session {
         let mut connections = self
             .connections
             .lock()
@@ -96,7 +102,15 @@ impl ZebraContainer {
             });
         }
 
-        token
+        let expire_times =
+            chrono::Utc::now() + std::time::Duration::from_secs(self.session_timeout);
+
+        let expires = expire_times
+            .timestamp()
+            .try_into()
+            .expect("Time shouldn't go backwards");
+
+        Session { token, expires }
     }
 
     pub fn handle_connection(
@@ -137,7 +151,7 @@ fn setup_relay(first: WebSocket, second: WebSocket, timeout: u64) {
     let relay_second = second_rx.forward(first_tx);
 
     let timeout = tokio::spawn(async move {
-        sleep(std::time::Duration::from_secs(timeout)).await;
+        tokio::time::sleep(std::time::Duration::from_secs(timeout)).await;
     });
 
     tokio::spawn(async {

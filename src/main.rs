@@ -5,7 +5,7 @@ use axum::extract::ws::WebSocket;
 use axum::extract::{Query, State, WebSocketUpgrade};
 use axum::response::IntoResponse;
 use axum::routing::get;
-use axum::{serve, Router};
+use axum::{serve, Json, Router};
 use clap::Parser;
 use serde::Deserialize;
 use std::net::ToSocketAddrs;
@@ -77,7 +77,7 @@ struct Session {
 }
 
 async fn session(app_state: State<ZebraContainer>) -> impl IntoResponse {
-    app_state.create_session()
+    Json(app_state.create_session())
 }
 
 #[derive(Deserialize)]
