@@ -8,12 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@maksimowicz/qrcode-svg':
+        specifier: ^1.0.0
+        version: 1.0.0
       protobufjs:
         specifier: ^7.4.0
         version: 7.4.0
-      qrcode-svg:
-        specifier: ^1.1.0
-        version: 1.1.0
       snabbdom:
         specifier: ^3.6.2
         version: 3.6.2
@@ -258,6 +258,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@maksimowicz/qrcode-svg@1.0.0':
+    resolution: {integrity: sha512-g4Br1STV9QVEsxo/KiEIozXMkVke1aNCjT1jQezdtq9jO2rdLyHy0WH19hKaQaeRkMx0/8L/iK+fqHsOvWUzFA==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -725,10 +728,6 @@ packages:
     resolution: {integrity: sha512-mRUWCc3KUU4w1jU8sGxICXH/gNS94DvI1gxqDvBzhj1JpcsimQkYiOJfwsPUykUI5ZaspFbSgmBLER8IrQ3tqw==}
     engines: {node: '>=12.0.0'}
 
-  qrcode-svg@1.1.0:
-    resolution: {integrity: sha512-XyQCIXux1zEIA3NPb0AeR8UMYvXZzWEhgdBgBjH9gO7M48H9uoHzviNz8pXw3UzrAcxRRRn9gxHewAVK7bn9qw==}
-    hasBin: true
-
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -1018,6 +1017,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@maksimowicz/qrcode-svg@1.0.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -1437,8 +1438,6 @@ snapshots:
       '@protobufjs/utf8': 1.1.0
       '@types/node': 22.7.4
       long: 5.2.3
-
-  qrcode-svg@1.1.0: {}
 
   queue-microtask@1.2.3: {}
 

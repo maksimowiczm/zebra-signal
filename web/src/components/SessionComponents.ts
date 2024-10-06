@@ -1,5 +1,3 @@
-// @ts-ignore
-import QRCode from "qrcode-svg";
 import { type VNode, h } from "snabbdom";
 import { ic_check } from "../assets/ic_check.ts";
 import { ic_content_copy } from "../assets/ic_content_copy.ts";
@@ -11,6 +9,7 @@ import {
   setupSession,
 } from "../utils/session.ts";
 import { Spacer } from "./Spacer.ts";
+import { QRCode } from "@maksimowicz/qrcode-svg";
 
 interface PeerSession {
   messages: Message[];
@@ -129,15 +128,21 @@ function SessionContent(session: Session, onReset: () => void): VNode {
 }
 
 function QR(token: string): VNode {
-  const qrcode = new QRCode({
-    content: token,
+  const svgNode = QRCode({
+    message: token,
+    errorCorrectionLevel: "L",
     padding: 0,
-    color: "oklch(var(--bc))",
-    background: "transparent",
   });
+  svgNode.style.fill = "oklch(var(--bc)";
 
   return h("div.flex.flex-col.justify-center", [
-    h("div.flex.justify-center.p-2", { props: { innerHTML: qrcode.svg() } }),
+    h("div.flex.justify-center.p-2", {
+      hook: {
+        insert: (vNode) => {
+          vNode.elm?.appendChild(svgNode);
+        },
+      },
+    }),
     h("div.text-center.tracking-widest.text-2xl", token),
   ]);
 }
