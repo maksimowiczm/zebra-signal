@@ -1,0 +1,3 @@
+[submodule "public/proto"]
+	path = public/proto
+	url = https://github.com/maksimowiczm/zebra-proto
