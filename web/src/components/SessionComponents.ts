@@ -175,7 +175,7 @@ function PeerSession(session: PeerSession): VNode {
 }
 
 function MessageComponent(message: Message): VNode {
-  let copyTimeoutId: number | undefined;
+  let copyTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
   async function handleCopy() {
     await navigator.clipboard.writeText(message.content);
