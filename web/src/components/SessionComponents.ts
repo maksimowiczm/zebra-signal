@@ -19,6 +19,7 @@ interface SessionState {
   connectionSession: Session | null;
   peerSession: PeerSession | undefined;
   isConnecting: boolean;
+  sessionError: Error | null;
 }
 
 export function SessionComponent(): VNode {
@@ -26,6 +27,7 @@ export function SessionComponent(): VNode {
     connectionSession: null,
     isConnecting: false,
     peerSession: undefined,
+    sessionError: null,
   };
   let vnode = SessionView(state, onReset);
   setup();
@@ -43,6 +45,7 @@ export function SessionComponent(): VNode {
     state.connectionSession = null;
     state.isConnecting = false;
     state.peerSession = undefined;
+    state.sessionError = null;
     update(state);
     setup();
   }
@@ -73,9 +76,13 @@ export function SessionComponent(): VNode {
         const messages = state.peerSession?.messages || [];
         update({ ...state, peerSession: { messages: [...messages, e] } });
       },
-    }).then(async (session) => {
-      update({ ...state, connectionSession: session });
-    });
+    })
+      .then(async (session) => {
+        update({ ...state, connectionSession: session });
+      })
+      .catch((e) => {
+        update({ ...state, sessionError: e });
+      });
   }
 
   return vnode;
@@ -83,6 +90,10 @@ export function SessionComponent(): VNode {
 
 function SessionView(state: SessionState, onReset: () => void): VNode {
   const child = (() => {
+    if (state.sessionError) {
+      return SessionError();
+    }
+
     if (!state.connectionSession) {
       return SessionLoading();
     }
@@ -105,7 +116,7 @@ function SessionView(state: SessionState, onReset: () => void): VNode {
     h(
       "button.absolute.btn.btn-primary.bottom-0",
       { on: { click: onReset } },
-      "Reset",
+      state.sessionError ? "Retry" : "Reset",
     ),
   ]);
 }
@@ -115,6 +126,10 @@ function SessionLoading(token = "zebra"): VNode {
     h("div.blur.bottom-0.left-0", {}, [QR(token)]),
     h("div.absolute.loading.loading-spinner.loading-lg.text-primary"),
   ]);
+}
+
+function SessionError(): VNode {
+  return h("div", "Failed to fetch session. Is the server running?");
 }
 
 function SessionContent(session: Session, onReset: () => void): VNode {

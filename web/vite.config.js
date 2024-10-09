@@ -1,7 +1,6 @@
 export default {
   server: {
-    host: "0.0.0.0", // otherwise webrtc won't work
-    port: 3000,
+    open: true, // otherwise webrtc won't work
     // proxy zebra-signal
     proxy: {
       "/session": "http://localhost:8080",
