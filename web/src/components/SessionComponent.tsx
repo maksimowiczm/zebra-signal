@@ -1,10 +1,11 @@
-import { QRCodeComponent } from "./QRCodeComponent.tsx";
-import { Session, useZebraSignalSocket } from "../hooks/useWebSocket.ts";
-import { useWebRTCPeerConnection } from "../hooks/useWebRTCPeerConnection.ts";
-import { Spacer } from "./Spacer.tsx";
 import React, { useEffect, useState } from "react";
+import { useWebRTCPeerConnection } from "../hooks/useWebRTCPeerConnection.ts";
+import { Session, useZebraSignalSocket } from "../hooks/useWebSocket.ts";
+import { PeerConnectionComponent } from "./PeerConnectionComponent.tsx";
+import { QRCodeComponent } from "./QRCodeComponent.tsx";
+import { Spacer } from "./Spacer.tsx";
 
-export const SessionComponent = () => {
+export function SessionComponent() {
   const { isReady, socket, session, reset, isError } = useZebraSignalSocket();
 
   let child: React.JSX.Element;
@@ -27,29 +28,27 @@ export const SessionComponent = () => {
       </button>
     </div>
   );
-};
+}
 
-const SessionLoading = ({ token = "zebra" }: { token?: string }) => {
-  return (
-    <div className="relative flex justify-center items-center">
-      <div className="blur bottom-0 left-0">
-        <QRWrapper token={token} />
-      </div>
-      <div className="absolute loading loading-spinner loading-lg text-primary" />
+const SessionLoading = ({ token = "zebra" }: { token?: string }) => (
+  <div className="relative flex justify-center items-center">
+    <div className="blur bottom-0 left-0">
+      <QRWrapper token={token} />
     </div>
-  );
-};
+    <div className="absolute loading loading-spinner loading-lg text-primary" />
+  </div>
+);
 
 const SessionError = () => (
   <div>Failed to fetch session. Is the server running?</div>
 );
 
-const SessionReady = ({
+function SessionReady({
   socket,
   session,
   reset,
-}: { socket: WebSocket; session: Session; reset: () => void }) => {
-  const { isReady, isConnecting } = useWebRTCPeerConnection({
+}: { socket: WebSocket; session: Session; reset: () => void }) {
+  const { dataChannel, isReady, isConnecting } = useWebRTCPeerConnection({
     signalingChannel: socket,
   });
 
@@ -58,16 +57,16 @@ const SessionReady = ({
   }
 
   if (isReady) {
-    return <div>todo</div>;
+    return <PeerConnectionComponent dataChannel={dataChannel} />;
   }
 
   return <SessionContent session={session} reset={reset} />;
-};
+}
 
-const SessionContent = ({
+function SessionContent({
   session,
   reset,
-}: { session: Session; reset: () => void }) => {
+}: { session: Session; reset: () => void }) {
   const [timeLeft, setTimeLeft] = useState(session.expires * 1000 - Date.now());
 
   useEffect(() => {
@@ -85,9 +84,9 @@ const SessionContent = ({
       <ProgressBar length={timeLeft} />
     </div>
   );
-};
+}
 
-const ProgressBar = ({ length }: { length: number }) => {
+function ProgressBar({ length }: { length: number }) {
   const [progress, setProgress] = useState<number | undefined>(undefined);
   const [start, setStart] = useState(length);
 
@@ -106,19 +105,17 @@ const ProgressBar = ({ length }: { length: number }) => {
   }, [progress]);
 
   return <progress className="progress" max={length} value={progress || 0} />;
-};
+}
 
-const QRWrapper = ({ token }: { token: string }) => {
-  return (
-    <div className="flex flex-col justify-center">
-      <QRCodeComponent
-        className="flex justify-center p-2"
-        padding={0}
-        errorCorrectionLevel="L"
-        message={token}
-        fill="oklch(var(--bc)"
-      />
-      <div className="text-center tracking-widest text-2xl">{token}</div>
-    </div>
-  );
-};
+const QRWrapper = ({ token }: { token: string }) => (
+  <div className="flex flex-col justify-center">
+    <QRCodeComponent
+      className="flex justify-center p-2"
+      fill="oklch(var(--bc)"
+      padding={0}
+      errorCorrectionLevel="L"
+      message={token}
+    />
+    <div className="text-center tracking-widest text-2xl">{token}</div>
+  </div>
+);

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
 import { QRCode } from "@maksimowicz/qrcode-svg";
+import { useEffect, useRef } from "react";
 
 interface Props {
   message: string;
