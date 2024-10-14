@@ -7,13 +7,10 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": ["./src-tauri/target", "./dist", "qrcode.min.js"]
+    "ignore": ["./dist", "node_modules"]
   },
   "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
+    "enabled": false
   },
   "formatter": {
     "enabled": true,
