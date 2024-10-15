@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface Props {
   signalingChannel: WebSocket;
-  iceServers?: RTCIceServer[];
+  iceServers: RTCIceServer[];
 }
 
 interface WebRTCPeerResultBase {
@@ -24,7 +24,7 @@ type WebRTCPeerResult = WebRTCPeerResultNotReady | WebRTCPeerResultReady;
 
 export const useWebRTCPeerConnection = ({
   signalingChannel,
-  iceServers = [{ urls: "stun:stun.l.google.com:19302" }],
+  iceServers,
 }: Props): WebRTCPeerResult => {
   const dataChannel = useRef<RTCDataChannel | undefined>(undefined);
   const peerConnection = useRef<RTCPeerConnection | undefined>(undefined);

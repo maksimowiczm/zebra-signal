@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useWebRTCPeerConnection } from "../hooks/useWebRTCPeerConnection.ts";
-import { Session, useZebraSignalSocket } from "../hooks/useWebSocket.ts";
+import React, { useContext, useEffect, useState } from "react";
+import { IceServersContext } from "../../context/useIceServers.tsx";
+import { useWebRTCPeerConnection } from "../../hooks/useWebRTCPeerConnection.ts";
+import { Session, useZebraSignalSocket } from "../../hooks/useWebSocket.ts";
+import { QRCodeComponent } from "../QRCodeComponent.tsx";
 import { PeerConnectionComponent } from "./PeerConnectionComponent.tsx";
-import { QRCodeComponent } from "./QRCodeComponent.tsx";
-import { Spacer } from "./Spacer.tsx";
 
 export function SessionComponent() {
   const { isReady, socket, session, reset, isError } = useZebraSignalSocket();
@@ -19,11 +19,9 @@ export function SessionComponent() {
   }
 
   return (
-    <div className="relative flex flex-col h-full items-center">
-      <Spacer />
+    <div className="relative flex flex-col justify-center h-full items-center">
       {child}
-      <Spacer />
-      <button className="btn btn-primary bottom-0 absolute" onClick={reset}>
+      <button className="btn btn-primary bottom-0 absolute m-5" onClick={reset}>
         Reset
       </button>
     </div>
@@ -48,8 +46,10 @@ function SessionReady({
   session,
   reset,
 }: { socket: WebSocket; session: Session; reset: () => void }) {
+  const { iceServers } = useContext(IceServersContext);
   const { dataChannel, isReady, isConnecting } = useWebRTCPeerConnection({
     signalingChannel: socket,
+    iceServers: iceServers.map(({ url }) => ({ urls: url })),
   });
 
   if (isConnecting) {

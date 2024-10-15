@@ -1,11 +1,11 @@
 import { useRef, useState } from "react";
-import CheckIcon from "../assets/CheckIcon.tsx";
-import ContentCopyIcon from "../assets/ContentCopyIcon.tsx";
+import CheckIcon from "../../assets/CheckIcon.tsx";
+import ContentCopyIcon from "../../assets/ContentCopyIcon.tsx";
 import {
   Message,
   MessageType,
   useZebraSignalDataChannel,
-} from "../hooks/useZebraSignalDataChannel.ts";
+} from "../../hooks/useZebraSignalDataChannel.ts";
 
 export function PeerConnectionComponent({
   dataChannel,
