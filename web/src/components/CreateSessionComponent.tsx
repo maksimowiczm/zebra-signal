@@ -1,12 +1,22 @@
 import React, { useContext, useEffect, useState } from "react";
-import { IceServersContext } from "../../context/useIceServers.tsx";
-import { useWebRTCPeerConnection } from "../../hooks/useWebRTCPeerConnection.ts";
-import { Session, useZebraSession } from "../../hooks/useZebraSession.ts";
-import { useZebraSignalSocket } from "../../hooks/useZebraSignalSocket.ts";
-import { QRCodeComponent } from "../QRCodeComponent.tsx";
+import ArrowBackIcon from "../assets/ArrowBackIcon.tsx";
+import SettingsIcon from "../assets/SettingsIcon.tsx";
+import { IceServersContext } from "../context/useIceServers.tsx";
+import { useWebRTCDataChannel } from "../hooks/useWebRTCDataChannel.ts";
+import { Session, useZebraSession } from "../hooks/useZebraSession.ts";
+import { useZebraSignalSocket } from "../hooks/useZebraSignalSocket.ts";
 import { PeerConnectionComponent } from "./PeerConnectionComponent.tsx";
+import { QRCodeComponent } from "./QRCodeComponent.tsx";
 
-export function SessionComponent() {
+interface SessionComponentProps {
+  onBack: () => void;
+  onIceServers: () => void;
+  onConnection: () => void;
+}
+export function CreateSessionComponent({
+  onBack,
+  onIceServers,
+}: SessionComponentProps) {
   const { session, sessionError, isLoading, refresh } = useZebraSession();
   const { isReady, isError, socket } = useZebraSignalSocket(session?.token);
 
@@ -21,15 +31,27 @@ export function SessionComponent() {
   }
 
   return (
-    <div className="relative flex flex-col justify-center h-full items-center">
-      {child}
-      <button
-        className="btn btn-primary bottom-0 absolute m-5"
-        onClick={refresh}
-      >
-        Reset
-      </button>
-    </div>
+    <>
+      <div className="flex justify-between">
+        <button className="btn btn-ghost items-center" onClick={onBack}>
+          <ArrowBackIcon fill={"oklch(var(--bc))"} />
+          Back
+        </button>
+        <button className="btn btn-ghost items-center" onClick={onIceServers}>
+          <SettingsIcon fill={"oklch(var(--bc))"} />
+          ICE Servers
+        </button>
+      </div>
+      <div className="relative flex flex-col justify-center h-full items-center">
+        {child}
+        <button
+          className="btn btn-primary bottom-0 absolute m-5"
+          onClick={refresh}
+        >
+          Reset
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -53,7 +75,7 @@ function SessionReady({
   reset,
 }: { socket: WebSocket; session: Session; reset: () => void }) {
   const { iceServers } = useContext(IceServersContext);
-  const { dataChannel, isReady, isConnecting } = useWebRTCPeerConnection({
+  const { dataChannel, isReady, isConnecting } = useWebRTCDataChannel({
     signalingChannel: socket,
     iceServers: iceServers.map(({ url }) => ({ urls: url })),
   });

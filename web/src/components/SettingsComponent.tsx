@@ -1,7 +1,7 @@
 import { useContext, useRef, useState } from "react";
-import DeleteForeverIcon from "../../assets/DeleteForeverIcon.tsx";
-import DeleteIcon from "../../assets/DeleteIcon.tsx";
-import { IceServersContext } from "../../context/useIceServers.tsx";
+import DeleteForeverIcon from "../assets/DeleteForeverIcon.tsx";
+import DeleteIcon from "../assets/DeleteIcon.tsx";
+import { IceServersContext } from "../context/useIceServers.tsx";
 
 export function SettingsComponent() {
   const { addIceServer } = useContext(IceServersContext);
