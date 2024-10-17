@@ -1,67 +1,47 @@
 import { useEffect, useRef, useState } from "react";
 
-export interface Session {
-  token: string;
-  expires: number;
-}
+type UseWebSocketResult =
+  | {
+      isReady: false;
+      socket: undefined;
+      isError: false;
+    }
+  | {
+      isReady: true;
+      socket: WebSocket;
+      isError: false;
+    }
+  | {
+      isReady: false;
+      socket: undefined;
+      isError: true;
+    };
 
-interface ZebraSignalSocketResultBase {
-  session: Session | undefined;
-  isError: boolean;
-  reset: () => void;
-}
-interface ZebraSignalSocketReady extends ZebraSignalSocketResultBase {
-  isReady: true;
-  session: Session;
-  socket: WebSocket;
-}
-interface ZebraSignalSocketNotReady extends ZebraSignalSocketResultBase {
-  isReady: false;
-  session: Session | undefined;
-  socket: undefined;
-}
-type ZebraSignalSocketResult =
-  | ZebraSignalSocketReady
-  | ZebraSignalSocketNotReady;
-
-export const useZebraSignalSocket = (): ZebraSignalSocketResult => {
-  const [session, setSession] = useState<Session | undefined>(undefined);
-  const [error, setError] = useState<boolean>(false);
-  const [ready, setReady] = useState<boolean>(false);
+export const useWebSocket = (url: string | undefined): UseWebSocketResult => {
+  const [isReady, setIsReady] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
   const socket = useRef<WebSocket | undefined>(undefined);
 
-  const refresh = () => {
-    setReady(false);
-
-    fetch("/api/session").then((response) => {
-      response
-        .json()
-        .then((data) => setSession(data))
-        .catch(() => setError(true));
-    });
-  };
-
-  // refresh on mount
-  useEffect(() => refresh(), []);
-
   useEffect(() => {
-    if (!session) {
+    setIsError(false);
+    setIsReady(false);
+
+    if (!url) {
       return;
     }
 
-    const ws = new WebSocket(`/api/ws?token=${session.token}`);
+    const ws = new WebSocket(url);
     socket.current = ws;
 
-    ws.onopen = () => setReady(true);
+    ws.onopen = () => setIsReady(true);
+    ws.onerror = () => setIsError(true);
 
     return () => ws.close();
-  }, [session]);
+  }, [url]);
 
-  return <ZebraSignalSocketResult>{
-    session,
+  return <UseWebSocketResult>{
+    isReady,
     socket: socket.current,
-    isReady: ready,
-    isError: error,
-    reset: refresh,
+    isError,
   };
 };

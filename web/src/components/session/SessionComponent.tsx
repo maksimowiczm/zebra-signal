@@ -1,27 +1,32 @@
 import React, { useContext, useEffect, useState } from "react";
 import { IceServersContext } from "../../context/useIceServers.tsx";
 import { useWebRTCPeerConnection } from "../../hooks/useWebRTCPeerConnection.ts";
-import { Session, useZebraSignalSocket } from "../../hooks/useWebSocket.ts";
+import { Session, useZebraSession } from "../../hooks/useZebraSession.ts";
+import { useZebraSignalSocket } from "../../hooks/useZebraSignalSocket.ts";
 import { QRCodeComponent } from "../QRCodeComponent.tsx";
 import { PeerConnectionComponent } from "./PeerConnectionComponent.tsx";
 
 export function SessionComponent() {
-  const { isReady, socket, session, reset, isError } = useZebraSignalSocket();
+  const { session, sessionError, isLoading, refresh } = useZebraSession();
+  const { isReady, isError, socket } = useZebraSignalSocket(session?.token);
 
   let child: React.JSX.Element;
 
-  if (isError) {
+  if (isError || sessionError) {
     child = <SessionError />;
-  } else if (isReady) {
-    child = <SessionReady socket={socket} session={session} reset={reset} />;
-  } else {
+  } else if (isLoading || !isReady) {
     child = <SessionLoading token={session?.token} />;
+  } else {
+    child = <SessionReady socket={socket} session={session} reset={refresh} />;
   }
 
   return (
     <div className="relative flex flex-col justify-center h-full items-center">
       {child}
-      <button className="btn btn-primary bottom-0 absolute m-5" onClick={reset}>
+      <button
+        className="btn btn-primary bottom-0 absolute m-5"
+        onClick={refresh}
+      >
         Reset
       </button>
     </div>
@@ -32,6 +37,7 @@ const SessionLoading = ({ token = "zebra" }: { token?: string }) => (
   <div className="relative flex justify-center items-center">
     <div className="blur bottom-0 left-0">
       <QRWrapper token={token} />
+      <ProgressBar length={1_000_000_000} />
     </div>
     <div className="absolute loading loading-spinner loading-lg text-primary" />
   </div>
@@ -86,7 +92,7 @@ function SessionContent({
   );
 }
 
-function ProgressBar({ length }: { length: number }) {
+function ProgressBar({ length }: { length: number; frozen?: boolean }) {
   const [progress, setProgress] = useState<number | undefined>(undefined);
   const [start, setStart] = useState(length);
 
