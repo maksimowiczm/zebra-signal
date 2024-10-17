@@ -33,7 +33,7 @@ export const useZebraSignalSocket = (): ZebraSignalSocketResult => {
   const refresh = () => {
     setReady(false);
 
-    fetch("/session").then((response) => {
+    fetch("/api/session").then((response) => {
       response
         .json()
         .then((data) => setSession(data))
@@ -49,7 +49,7 @@ export const useZebraSignalSocket = (): ZebraSignalSocketResult => {
       return;
     }
 
-    const ws = new WebSocket(`/ws?token=${session.token}`);
+    const ws = new WebSocket(`/api/ws?token=${session.token}`);
     socket.current = ws;
 
     ws.onopen = () => setReady(true);

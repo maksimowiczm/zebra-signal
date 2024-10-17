@@ -8,9 +8,10 @@ export default defineConfig({
     open: true, // otherwise webrtc won't work
     // proxy zebra-signal
     proxy: {
-      "/session": "http://localhost:8080",
-      "/ws": {
+      "/api": {
         target: "http://localhost:8080",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
         ws: true,
       },
     },
