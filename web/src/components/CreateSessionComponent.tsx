@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import ArrowBackIcon from "../assets/ArrowBackIcon.tsx";
 import SettingsIcon from "../assets/SettingsIcon.tsx";
-import { IceServersContext } from "../context/useIceServers.tsx";
+import { IceServersContext } from "../context/IceServersContext.tsx";
 import { useWebRTCDataChannel } from "../hooks/useWebRTCDataChannel.ts";
 import { Session, useZebraSession } from "../hooks/useZebraSession.ts";
 import { useZebraSignalSocket } from "../hooks/useZebraSignalSocket.ts";
@@ -11,7 +11,6 @@ import { QRCodeComponent } from "./QRCodeComponent.tsx";
 interface SessionComponentProps {
   onBack: () => void;
   onIceServers: () => void;
-  onConnection: () => void;
 }
 export function CreateSessionComponent({
   onBack,

@@ -1,23 +1,35 @@
 import { useContext, useRef, useState } from "react";
+import ArrowBackIcon from "../assets/ArrowBackIcon.tsx";
 import DeleteForeverIcon from "../assets/DeleteForeverIcon.tsx";
 import DeleteIcon from "../assets/DeleteIcon.tsx";
-import { IceServersContext } from "../context/useIceServers.tsx";
+import { IceServersContext } from "../context/IceServersContext.tsx";
 
-export function SettingsComponent() {
+interface IceServersComponentProps {
+  onBack: () => void;
+}
+export function IceServersComponent({ onBack }: IceServersComponentProps) {
   const { addIceServer } = useContext(IceServersContext);
 
   return (
-    <div>
-      <div className="pb-5">
-        <div className="text-3xl">ICE Servers</div>
-        <div className="text">
-          Manage your STUN/TURN servers for WebRTC connections
-        </div>
+    <>
+      <div className="flex justify-between mb-5">
+        <button className="btn btn-ghost items-center" onClick={onBack}>
+          <ArrowBackIcon fill={"oklch(var(--bc))"} />
+          Back
+        </button>
       </div>
-      <div className="text-xl font-bold py-1">Add ICE Server</div>
-      <IceServerForm handleAdd={addIceServer} />
-      <IceServersList />
-    </div>
+      <div>
+        <div className="pb-5">
+          <div className="text-3xl">ICE Servers</div>
+          <div className="text">
+            Manage your STUN/TURN servers for WebRTC connections
+          </div>
+        </div>
+        <div className="text-xl font-bold py-1">Add ICE Server</div>
+        <IceServerForm handleAdd={addIceServer} />
+        <IceServersList />
+      </div>
+    </>
   );
 }
 
