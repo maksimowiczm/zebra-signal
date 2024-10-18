@@ -3,26 +3,24 @@ import { useEffect, useRef, useState } from "react";
 interface Props {
   signalingChannel: WebSocket;
   iceServers: RTCIceServer[];
-  /// If owner is true then we are responsible for creating the offer and handling signaling channel
-  owner?: boolean;
 }
 
 type WebRTCPeerResult =
-  // Not connected
+  // Created
   | {
       peerConnection: undefined;
       isReady: false;
       isConnecting: false;
       dataChannel: undefined;
     }
-  // Connecting
+  // Waiting for an offer or answer
   | {
-      peerConnection: undefined;
+      peerConnection: RTCPeerConnection;
       isReady: false;
-      isConnecting: true;
+      isConnecting: false;
       dataChannel: undefined;
     }
-  // Peer connection created, waiting for data channel
+  // Peer is connecting, waiting for data channel
   | {
       peerConnection: RTCPeerConnection;
       isReady: false;
@@ -40,7 +38,6 @@ type WebRTCPeerResult =
 export const useWebRTCDataChannel = ({
   signalingChannel,
   iceServers,
-  owner = false,
 }: Props): WebRTCPeerResult => {
   const dataChannel = useRef<RTCDataChannel | undefined>(undefined);
   const peerConnection = useRef<RTCPeerConnection | undefined>(undefined);
@@ -99,47 +96,44 @@ export const useWebRTCDataChannel = ({
       signalingChannel.send(JSON.stringify(message));
     };
 
-    signalingChannel.onmessage = async (event) => {
-      // If we are not ready we are connecting
-      !isReady && setIsConnecting(true);
+    signalingChannel.onmessage = (event) => {
+      // Ignore if we are connected
+      if (isReady) {
+        return;
+      }
+      // If we are not ready we have just started connecting
+      setIsConnecting(true);
 
       const message = JSON.parse(event.data);
 
-      // If we are the owner we only care about answers
-      if (owner && message.type === "answer") {
-        return await handleAnswer(message, pc);
+      if (message.type === "answer") {
+        return handleAnswer(message, pc);
       }
 
-      // If we are not the owner we only care about offers
-      if (!owner && message.type === "offer") {
-        return await handleOffer(message, pc, signalingChannel);
+      // If we got offer we listen for a data channel
+      if (message.type === "offer") {
+        pc.ondatachannel = (e) => onDataChannel(e.channel);
+        return handleOffer(message, pc, signalingChannel);
       }
 
-      // Handle ice candidates
       if (message.type === "candidate") {
-        return await handleCandidate(message, pc);
+        return handleCandidate(message, pc);
       }
     };
 
-    // If we are the owner we need to create the data channel
-    if (owner) {
-      const dc = pc.createDataChannel("dead_inside");
+    // Create a data channel and offer
+    // We might not need it if we are the one who got the offer
+    const dc = pc.createDataChannel("dead_inside");
+    onDataChannel(dc);
 
-      onDataChannel(dc);
-
-      pc.createOffer()
-        .then(async (offer) => {
-          signalingChannel.send(JSON.stringify(offer));
-          await pc.setLocalDescription(offer);
-        })
-        .catch((e) => {
-          console.error("Error creating offer", e);
-        });
-    }
-    // If we are not the owner we need to wait for the data channel to be created
-    if (!owner) {
-      pc.ondatachannel = (e) => onDataChannel(e.channel);
-    }
+    pc.createOffer()
+      .then(async (offer) => {
+        signalingChannel.send(JSON.stringify(offer));
+        await pc.setLocalDescription(offer);
+      })
+      .catch((e) => {
+        console.error("Error creating offer", e);
+      });
 
     return cleanup;
   }, [signalingChannel]);
@@ -174,7 +168,7 @@ async function handleCandidate(
   try {
     await peerConnection.addIceCandidate(candidate);
   } catch (e) {
-    console.error("Error adding ice candidate", e);
+    console.warn("Error adding ice candidate", e);
   }
 }
 
