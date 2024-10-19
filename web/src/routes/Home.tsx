@@ -3,16 +3,19 @@ import { Link, LinkProps } from "react-router-dom";
 import ConversionPathIcon from "../assets/ConversionPathIcon.tsx";
 import QrCode2Icon from "../assets/QrCode2Icon.tsx";
 import SettingsIcon from "../assets/SettingsIcon.tsx";
+import { NavigationBar } from "../components/NavigationBar.tsx";
 
 export function Home() {
   return (
     <>
-      <div className="flex justify-end">
-        <button className="btn btn-ghost items-center">
-          <SettingsIcon fill={"oklch(var(--bc))"} />
-          ICE Servers
-        </button>
-      </div>
+      <NavigationBar
+        trailingComponent={
+          <button className="btn btn-ghost items-center">
+            <SettingsIcon fill={"oklch(var(--bc))"} />
+            ICE Servers
+          </button>
+        }
+      />
       <div className="flex justify-center items-center w-full h-full">
         <div className="grow max-w-screen-md flex flex-col md:flex-row justify-center items-center">
           <MenuItem to="/new">

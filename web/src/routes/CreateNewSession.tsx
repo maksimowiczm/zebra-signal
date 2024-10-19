@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import ArrowBackIcon from "../assets/ArrowBackIcon.tsx";
 import SettingsIcon from "../assets/SettingsIcon.tsx";
 import { IceServersComponent } from "../components/IceServersComponent.tsx";
+import { NavigationBar } from "../components/NavigationBar.tsx";
 import { PeerConnectionComponent } from "../components/PeerConnectionComponent.tsx";
 import { ProgressBarComponent } from "../components/ProgressBarComponent.tsx";
 import { QRCodeComponent } from "../components/QRCodeComponent.tsx";
@@ -44,21 +45,25 @@ function CreateNewSessionContainer({
 
   return (
     <>
-      <div className="flex justify-between">
-        <Link to="/">
-          <button className="btn btn-ghost items-center">
-            <ArrowBackIcon fill={"oklch(var(--bc))"} />
-            Back
+      <NavigationBar
+        leadingComponent={
+          <Link to="/">
+            <button className="btn btn-ghost items-center">
+              <ArrowBackIcon fill={"oklch(var(--bc))"} />
+              Back
+            </button>
+          </Link>
+        }
+        trailingComponent={
+          <button
+            className="btn btn-ghost items-center"
+            onClick={() => setIceOpened(true)}
+          >
+            <SettingsIcon fill={"oklch(var(--bc))"} />
+            ICE Servers
           </button>
-        </Link>
-        <button
-          className="btn btn-ghost items-center"
-          onClick={() => setIceOpened(true)}
-        >
-          <SettingsIcon fill={"oklch(var(--bc))"} />
-          ICE Servers
-        </button>
-      </div>
+        }
+      />
       <div className="relative flex flex-col justify-center h-full items-center">
         {children}
       </div>
