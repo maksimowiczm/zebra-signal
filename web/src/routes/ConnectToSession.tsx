@@ -5,6 +5,8 @@ import SettingsIcon from "../assets/SettingsIcon.tsx";
 import { IceServersComponent } from "../components/IceServersComponent.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
 import { PeerConnectionComponent } from "../components/PeerConnectionComponent.tsx";
+import { PeerConnectionConnectingComponent } from "../components/PeerConnectionConnectingComponent.tsx";
+import { PeerConnectionErrorComponent } from "../components/PeerConnectionErrorComponent.tsx";
 import { IceServersContext } from "../context/IceServersContext.tsx";
 import { useWebRTCDataChannel } from "../hooks/useWebRTCDataChannel.ts";
 import { useZebraSignalSocket } from "../hooks/useZebraSignalSocket.ts";
@@ -12,11 +14,12 @@ import { useZebraSignalSocket } from "../hooks/useZebraSignalSocket.ts";
 export function ConnectToSession() {
   const [iceOpened, setIceOpened] = useState(false);
   const [token, setToken] = useState<string | undefined>(undefined);
+  const handleCancel = () => setToken(undefined);
 
   const input = useRef<HTMLInputElement>(null);
 
   if (token) {
-    return <TokenReady token={token} />;
+    return <TokenReady token={token} handleCancel={handleCancel} />;
   }
 
   if (iceOpened) {
@@ -62,29 +65,29 @@ export function ConnectToSession() {
   );
 }
 
-function TokenReady({ token }: { token: string }) {
+function TokenReady({
+  token,
+  handleCancel,
+}: { token: string; handleCancel: () => void }) {
   const { isConnecting, isError, socket } = useZebraSignalSocket(token);
 
   if (isError) {
-    return <SocketError />;
+    return <PeerConnectionErrorComponent />;
   }
 
   if (isConnecting) {
-    return <SocketLoading />;
+    return <PeerConnectionConnectingComponent handleCancel={handleCancel} />;
   }
 
-  return <PeerConnectingComponent socket={socket} />;
+  return (
+    <PeerConnectingComponent socket={socket} handleCancel={handleCancel} />
+  );
 }
 
-function SocketError() {
-  return <div>Error</div>;
-}
-
-function SocketLoading() {
-  return <div>Loading...</div>;
-}
-
-function PeerConnectingComponent({ socket }: { socket: WebSocket }) {
+function PeerConnectingComponent({
+  socket,
+  handleCancel,
+}: { socket: WebSocket; handleCancel: () => void }) {
   const { iceServers } = useContext(IceServersContext);
 
   const { isReady, dataChannel } = useWebRTCDataChannel({
@@ -98,5 +101,5 @@ function PeerConnectingComponent({ socket }: { socket: WebSocket }) {
     return <PeerConnectionComponent dataChannel={dataChannel} />;
   }
 
-  return <div>Connecting...</div>;
+  return <PeerConnectionConnectingComponent handleCancel={handleCancel} />;
 }

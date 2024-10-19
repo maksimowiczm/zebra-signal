@@ -5,6 +5,8 @@ import SettingsIcon from "../assets/SettingsIcon.tsx";
 import { IceServersComponent } from "../components/IceServersComponent.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
 import { PeerConnectionComponent } from "../components/PeerConnectionComponent.tsx";
+import { PeerConnectionConnectingComponent } from "../components/PeerConnectionConnectingComponent.tsx";
+import { PeerConnectionErrorComponent } from "../components/PeerConnectionErrorComponent.tsx";
 import { ProgressBarComponent } from "../components/ProgressBarComponent.tsx";
 import { QRCodeComponent } from "../components/QRCodeComponent.tsx";
 import { IceServersContext } from "../context/IceServersContext.tsx";
@@ -100,7 +102,7 @@ function SessionReady({
   if (isError) {
     return (
       <CreateNewSessionContainer>
-        <SessionError />
+        <PeerConnectionErrorComponent />
       </CreateNewSessionContainer>
     );
   }
@@ -129,7 +131,7 @@ function SocketReady({
 }: { socket: WebSocket; session: Session; refetchSession: () => void }) {
   // WebRTC
   const { iceServers } = useContext(IceServersContext);
-  const { isReady, dataChannel } = useWebRTCDataChannel({
+  const { isReady, dataChannel, isConnecting } = useWebRTCDataChannel({
     signalingChannel: socket,
     iceServers: iceServers.map(({ url }) => ({ urls: url })),
   });
@@ -154,6 +156,10 @@ function SocketReady({
   // WebRTC ready
   if (isReady) {
     return <PeerConnectionComponent dataChannel={dataChannel} />;
+  }
+
+  if (isConnecting) {
+    return <PeerConnectionConnectingComponent handleCancel={refetchSession} />;
   }
 
   return (
