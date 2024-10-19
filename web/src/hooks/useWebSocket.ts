@@ -2,45 +2,45 @@ import { useEffect, useRef, useState } from "react";
 
 type UseWebSocketResult =
   | {
-      isReady: false;
-      socket: undefined;
+      isConnecting: true;
+      socket: WebSocket | undefined;
       isError: false;
     }
   | {
-      isReady: true;
+      isConnecting: false;
       socket: WebSocket;
       isError: false;
     }
   | {
-      isReady: false;
+      isConnecting: false;
       socket: undefined;
       isError: true;
     };
 
-export const useWebSocket = (url: string | undefined): UseWebSocketResult => {
-  const [isReady, setIsReady] = useState<boolean>(false);
+export const useWebSocket = (url: string): UseWebSocketResult => {
+  const [isConnecting, setIsConnecting] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
   const socket = useRef<WebSocket | undefined>(undefined);
 
   useEffect(() => {
-    setIsError(false);
-    setIsReady(false);
-
-    if (!url) {
-      return;
-    }
-
     const ws = new WebSocket(url);
     socket.current = ws;
 
-    ws.onopen = () => setIsReady(true);
-    ws.onerror = () => setIsError(true);
+    const onOpen = () => setIsConnecting(false);
+    const onError = () => setIsError(true);
 
-    return () => ws.close();
+    ws.addEventListener("open", onOpen);
+    ws.addEventListener("error", onError);
+
+    return () => {
+      ws.removeEventListener("open", onOpen);
+      ws.removeEventListener("error", onError);
+      ws.close();
+    };
   }, [url]);
 
   return <UseWebSocketResult>{
-    isReady,
+    isConnecting,
     socket: socket.current,
     isError,
   };

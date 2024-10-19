@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface Session {
   token: string;
@@ -6,52 +6,56 @@ export interface Session {
 }
 
 type ZebraSessionResult =
+  // fetching
   | {
       isLoading: true;
       session: undefined;
-      sessionError: false;
-      refresh: undefined;
+      isError: false;
+      refetchSession: undefined;
     }
-  | {
-      isLoading: false;
-      session: Session;
-      sessionError: false;
-      refresh: () => void;
-    }
+  // error
   | {
       isLoading: false;
       session: undefined;
-      sessionError: true;
-      refresh: undefined;
+      isError: true;
+      refetchSession: () => void;
+    }
+  // success
+  | {
+      isLoading: false;
+      session: Session;
+      isError: false;
+      refetchSession: () => void;
     };
 
 export const useZebraSession = (): ZebraSessionResult => {
-  const [session, setSession] = useState<Session | undefined>(undefined);
+  const session = useRef<Session | undefined>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [sessionError, setSessionError] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
 
-  const refresh = () => {
+  const fetchSession = () => {
+    session.current = undefined;
+    setIsError(false);
     setIsLoading(true);
 
     fetch("/api/session").then((response) => {
       response
         .json()
         .then((data) => {
-          setSession(data);
-          setSessionError(false);
+          session.current = data;
           setIsLoading(false);
         })
-        .catch(() => setSessionError(true));
+        .catch(() => setIsError(true));
     });
   };
 
-  // refresh on mount
-  useEffect(refresh, []);
+  // fetch on mount
+  useEffect(fetchSession, []);
 
   return <ZebraSessionResult>{
     isLoading,
-    session,
-    sessionError,
-    refresh,
+    session: session.current,
+    isError,
+    refetchSession: isLoading ? () => {} : fetchSession,
   };
 };

@@ -44,44 +44,30 @@ export const useWebRTCDataChannel = ({
   const [isReady, setIsReady] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
-  const cleanup = () => {
-    dataChannel.current?.close();
-    peerConnection.current?.close();
-    peerConnection.current = undefined;
-    dataChannel.current = undefined;
-    setIsReady(false);
-    setIsConnecting(false);
-  };
-
-  useEffect(() => {
-    isReady && setIsConnecting(false);
-  }, [isReady]);
-
-  const onDataChannel = (dc: RTCDataChannel) => {
-    dataChannel.current = dc;
-    dc.onopen = () => setIsReady(true);
-    dc.onerror = cleanup;
-  };
-
-  useEffect(() => {
-    const configuration = { iceServers };
-    const pc = new RTCPeerConnection(configuration);
-    peerConnection.current = pc;
-
-    pc.onconnectionstatechange = () => {
-      if (
-        pc.connectionState === "disconnected" ||
-        pc.connectionState === "closed"
-      ) {
-        cleanup();
-      }
-
-      if (pc.connectionState === "connected") {
-        signalingChannel.close();
-      }
+  const handleDataChannel = (dc: RTCDataChannel) => {
+    const handleOpen = () => {
+      setIsReady(true);
+    };
+    const handleClose = () => {
+      // todo
+    };
+    const handleError = (e: Event) => {
+      console.error("Data channel error", e);
     };
 
-    pc.onicecandidate = (event) => {
+    dataChannel.current?.close();
+    dataChannel.current?.removeEventListener("open", handleOpen);
+    dataChannel.current?.removeEventListener("close", handleClose);
+    dataChannel.current?.removeEventListener("error", handleError);
+
+    dataChannel.current = dc;
+    dc.addEventListener("open", handleOpen);
+    dc.addEventListener("close", handleClose);
+    dc.addEventListener("error", handleError);
+  };
+
+  const handleIceCandidate = (event: RTCPeerConnectionIceEvent) => {
+    try {
       if (!event.candidate) {
         return;
       }
@@ -94,37 +80,71 @@ export const useWebRTCDataChannel = ({
       };
 
       signalingChannel.send(JSON.stringify(message));
-    };
+    } catch (e) {
+      console.warn("Error sending ice candidate", e);
+    }
+  };
 
-    signalingChannel.onmessage = (event) => {
-      // Ignore if we are connected
-      if (isReady) {
-        return;
-      }
-      // If we are not ready we have just started connecting
-      setIsConnecting(true);
+  const handleMessage = (event: MessageEvent) => {
+    if (!peerConnection.current) {
+      return;
+    }
 
-      const message = JSON.parse(event.data);
+    const pc = peerConnection.current;
 
-      if (message.type === "answer") {
-        return handleAnswer(message, pc);
-      }
+    // Ignore if we are connected
+    if (isReady) {
+      return;
+    }
+    // If we are not ready we have just started connecting
+    setIsConnecting(true);
 
-      // If we got offer we listen for a data channel
-      if (message.type === "offer") {
-        pc.ondatachannel = (e) => onDataChannel(e.channel);
-        return handleOffer(message, pc, signalingChannel);
-      }
+    const message = JSON.parse(event.data);
 
-      if (message.type === "candidate") {
-        return handleCandidate(message, pc);
-      }
-    };
+    if (message.type === "answer") {
+      return handleAnswer(message, pc);
+    }
 
-    // Create a data channel and offer
-    // We might not need it if we are the one who got the offer
-    const dc = pc.createDataChannel("dead_inside");
-    onDataChannel(dc);
+    // If we got offer we listen for a data channel
+    if (message.type === "offer") {
+      pc.ondatachannel = (e) => handleDataChannel(e.channel);
+      return handleOffer(message, pc, signalingChannel);
+    }
+
+    if (message.type === "candidate") {
+      return handleCandidate(message, pc);
+    }
+  };
+
+  const handleConnectionStateChange = () => {
+    if (!peerConnection.current) {
+      return;
+    }
+
+    const pc = peerConnection.current;
+
+    if (
+      pc.connectionState === "disconnected" ||
+      pc.connectionState === "closed"
+    ) {
+    }
+
+    // Close the signaling channel if we are connected
+    if (pc.connectionState === "connected") {
+      signalingChannel.close();
+    }
+  };
+
+  useEffect(() => {
+    const pc = new RTCPeerConnection({ iceServers });
+    peerConnection.current = pc;
+
+    pc.addEventListener("connectionstatechange", handleConnectionStateChange);
+    pc.addEventListener("icecandidate", handleIceCandidate);
+    signalingChannel.addEventListener("message", handleMessage);
+
+    const dc = pc.createDataChannel("dead_inside", { negotiated: true, id: 0 });
+    handleDataChannel(dc);
 
     pc.createOffer()
       .then(async (offer) => {
@@ -135,14 +155,22 @@ export const useWebRTCDataChannel = ({
         console.error("Error creating offer", e);
       });
 
-    return cleanup;
+    return () => {
+      pc.close();
+      signalingChannel.removeEventListener("message", handleMessage);
+      pc.removeEventListener("icecandidate", handleIceCandidate);
+      pc.removeEventListener(
+        "connectionstatechange",
+        handleConnectionStateChange,
+      );
+    };
   }, [signalingChannel]);
 
   return <WebRTCPeerResult>{
     peerConnection: peerConnection.current,
     isReady,
     dataChannel: dataChannel.current,
-    isConnecting,
+    isConnecting: isReady ? false : isConnecting,
   };
 };
 
