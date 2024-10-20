@@ -1,19 +1,10 @@
-import { useEffect } from "react";
+import { useZebraSignalDataChannel } from "../hooks/useZebraSignalDataChannel.ts";
+import { ChatComponent } from "./chat/ChatComponent.tsx";
 
 export function PeerConnectionComponent({
   dataChannel,
 }: { dataChannel: RTCDataChannel }) {
-  dataChannel.onmessage = async (event) => {
-    console.log(event.data);
-  };
+  const zebra = useZebraSignalDataChannel({ dataChannel });
 
-  useEffect(() => {
-    const i = setInterval(() => {
-      dataChannel.send("ping");
-    }, 1000);
-
-    return () => clearInterval(i);
-  }, []);
-
-  return <div>Just ping ponging around</div>;
+  return <ChatComponent {...zebra} />;
 }

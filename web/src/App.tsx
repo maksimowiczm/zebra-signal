@@ -20,7 +20,7 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div className="h-dvh w-dvw flex flex-col p-5 overflow-y-scroll">
+    <div className="h-dvh w-dvw flex flex-col">
       <RouterProvider router={router} />
     </div>
   );
