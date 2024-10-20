@@ -1,7 +1,7 @@
 import { useContext, useRef, useState } from "react";
-import ArrowBackIcon from "../assets/ArrowBackIcon.tsx";
-import DeleteForeverIcon from "../assets/DeleteForeverIcon.tsx";
-import DeleteIcon from "../assets/DeleteIcon.tsx";
+import ArrowBackIcon from "../assets/material_icons/ArrowBackIcon.tsx";
+import DeleteForeverIcon from "../assets/material_icons/DeleteForeverIcon.tsx";
+import DeleteIcon from "../assets/material_icons/DeleteIcon.tsx";
 import { IceServersContext } from "../context/IceServersContext.tsx";
 
 interface IceServersComponentProps {

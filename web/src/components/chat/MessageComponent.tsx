@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import CheckIcon from "../../assets/CheckIcon.tsx";
-import ContentCopyIcon from "../../assets/ContentCopyIcon.tsx";
+import CheckIcon from "../../assets/material_icons/CheckIcon.tsx";
+import ContentCopyIcon from "../../assets/material_icons/ContentCopyIcon.tsx";
 import {
   Message,
   MessageType,

@@ -1,4 +1,4 @@
-import ArrowBackIcon from "../assets/ArrowBackIcon.tsx";
+import ArrowBackIcon from "../assets/material_icons/ArrowBackIcon.tsx";
 import { NavigationBar } from "./NavigationBar.tsx";
 
 interface PeerConnectionConnectingComponentProps {

@@ -1,8 +1,8 @@
 import React from "react";
 import { Link, LinkProps } from "react-router-dom";
-import ConversionPathIcon from "../assets/ConversionPathIcon.tsx";
-import QrCode2Icon from "../assets/QrCode2Icon.tsx";
-import SettingsIcon from "../assets/SettingsIcon.tsx";
+import ConversionPathIcon from "../assets/material_icons/ConversionPathIcon.tsx";
+import QrCode2Icon from "../assets/material_icons/QrCode2Icon.tsx";
+import SettingsIcon from "../assets/material_icons/SettingsIcon.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
 
 export function Home() {

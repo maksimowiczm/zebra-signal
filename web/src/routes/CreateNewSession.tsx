@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import ArrowBackIcon from "../assets/ArrowBackIcon.tsx";
-import SettingsIcon from "../assets/SettingsIcon.tsx";
+import ArrowBackIcon from "../assets/material_icons/ArrowBackIcon.tsx";
+import SettingsIcon from "../assets/material_icons/SettingsIcon.tsx";
 import { IceServersComponent } from "../components/IceServersComponent.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
 import { PeerConnectionComponent } from "../components/PeerConnectionComponent.tsx";
