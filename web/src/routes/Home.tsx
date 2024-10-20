@@ -1,8 +1,6 @@
+import { ConversionPathIcon, QrCode2Icon, SettingsIcon } from "@material-icons";
 import React from "react";
 import { Link, LinkProps } from "react-router-dom";
-import ConversionPathIcon from "../assets/material_icons/ConversionPathIcon.tsx";
-import QrCode2Icon from "../assets/material_icons/QrCode2Icon.tsx";
-import SettingsIcon from "../assets/material_icons/SettingsIcon.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
 
 export function Home() {
@@ -11,7 +9,7 @@ export function Home() {
       <NavigationBar
         trailingComponent={
           <button className="btn btn-ghost items-center">
-            <SettingsIcon fill={"oklch(var(--bc))"} />
+            <SettingsIcon className="fill-current h-6 w-6" />
             ICE Servers
           </button>
         }

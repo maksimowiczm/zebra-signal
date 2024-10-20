@@ -1,7 +1,5 @@
+import { LockIcon, SendIcon, VisibilityIcon } from "@material-icons";
 import { useRef, useState } from "react";
-import LockIcon from "../../assets/material_icons/LockIcon.tsx";
-import SendIcon from "../../assets/material_icons/SendIcon.tsx";
-import VisibilityIcon from "../../assets/material_icons/VisibilityIcon.tsx";
 import { Message, MessageType } from "../../hooks/useZebraSignalDataChannel.ts";
 
 export function MessageInputComponent({

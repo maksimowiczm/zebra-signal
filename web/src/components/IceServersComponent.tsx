@@ -1,8 +1,6 @@
+import { ArrowBackIcon, DeleteForeverIcon, DeleteIcon } from "@material-icons";
 import { useContext, useRef, useState } from "react";
-import ArrowBackIcon from "../assets/material_icons/ArrowBackIcon.tsx";
-import DeleteForeverIcon from "../assets/material_icons/DeleteForeverIcon.tsx";
-import DeleteIcon from "../assets/material_icons/DeleteIcon.tsx";
-import { IceServersContext } from "../context/IceServersContext.tsx";
+import { IceServersContext } from "../contexts/IceServersContext.tsx";
 
 interface IceServersComponentProps {
   onBack: () => void;

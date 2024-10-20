@@ -1,5 +1,5 @@
+import { KeyboardArrowDownIcon } from "@material-icons";
 import { useEffect, useRef, useState } from "react";
-import KeyboardArrowDownIcon from "../../assets/material_icons/KeyboardArrowDownIcon.tsx";
 import { Message } from "../../hooks/useZebraSignalDataChannel.ts";
 import { MessageComponent } from "./MessageComponent.tsx";
 

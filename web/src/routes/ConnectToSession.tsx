@@ -1,13 +1,12 @@
+import { ArrowBackIcon, SettingsIcon } from "@material-icons";
 import { useContext, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import ArrowBackIcon from "../assets/material_icons/ArrowBackIcon.tsx";
-import SettingsIcon from "../assets/material_icons/SettingsIcon.tsx";
 import { IceServersComponent } from "../components/IceServersComponent.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
 import { PeerConnectionComponent } from "../components/PeerConnectionComponent.tsx";
 import { PeerConnectionConnectingComponent } from "../components/PeerConnectionConnectingComponent.tsx";
 import { PeerConnectionErrorComponent } from "../components/PeerConnectionErrorComponent.tsx";
-import { IceServersContext } from "../context/IceServersContext.tsx";
+import { IceServersContext } from "../contexts/IceServersContext.tsx";
 import { useWebRTCDataChannel } from "../hooks/useWebRTCDataChannel.ts";
 import { useZebraSignalSocket } from "../hooks/useZebraSignalSocket.ts";
 
@@ -32,7 +31,7 @@ export function ConnectToSession() {
         leadingComponent={
           <Link to="/">
             <button className="btn btn-ghost items-center">
-              <ArrowBackIcon fill={"oklch(var(--bc))"} />
+              <ArrowBackIcon className="fill-current h-6 w-6" />
               Back
             </button>
           </Link>
@@ -42,7 +41,7 @@ export function ConnectToSession() {
             className="btn btn-ghost items-center"
             onClick={() => setIceOpened(true)}
           >
-            <SettingsIcon fill={"oklch(var(--bc))"} />
+            <SettingsIcon className="fill-current h-6 w-6" />
             ICE Servers
           </button>
         }
