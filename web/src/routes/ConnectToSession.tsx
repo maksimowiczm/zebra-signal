@@ -52,6 +52,11 @@ export function ConnectToSession() {
           className="input input-bordered w-full max-w-xs m-5"
           type="text"
           placeholder="Session token"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setToken(input.current?.value);
+            }
+          }}
         />
         <button
           className="btn btn-primary"

@@ -1,14 +1,24 @@
 import { ConversionPathIcon, QrCode2Icon, SettingsIcon } from "@material-icons";
-import React from "react";
+import React, { useState } from "react";
 import { Link, LinkProps } from "react-router-dom";
+import { IceServersComponent } from "../components/IceServersComponent.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
 
 export function Home() {
+  const [iceOpened, setIceOpened] = useState(false);
+
+  if (iceOpened) {
+    return <IceServersComponent onBack={() => setIceOpened(false)} />;
+  }
+
   return (
     <>
       <NavigationBar
         trailingComponent={
-          <button className="btn btn-ghost items-center">
+          <button
+            className="btn btn-ghost items-center"
+            onClick={() => setIceOpened(true)}
+          >
             <SettingsIcon className="fill-current h-6 w-6" />
             ICE Servers
           </button>
@@ -17,11 +27,11 @@ export function Home() {
       <div className="flex justify-center items-center w-full h-full">
         <div className="grow max-w-screen-md flex flex-col md:flex-row justify-center items-center">
           <MenuItem to="/new">
-            <QrCode2Icon fill="oklch(var(--bc))" />
+            <QrCode2Icon className="fill-current" />
             <MenuItemLabel label={"Create new session"} />
           </MenuItem>
           <MenuItem to="/connect">
-            <ConversionPathIcon fill="oklch(var(--bc))" />
+            <ConversionPathIcon className="fill-current" />
             <MenuItemLabel label={"Connect to the session"} />
           </MenuItem>
         </div>

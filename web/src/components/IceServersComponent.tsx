@@ -12,7 +12,7 @@ export function IceServersComponent({ onBack }: IceServersComponentProps) {
     <>
       <div className="flex justify-between mb-5">
         <button className="btn btn-ghost items-center" onClick={onBack}>
-          <ArrowBackIcon fill={"oklch(var(--bc))"} />
+          <ArrowBackIcon className="fill-current h-6 w-6" />
           Back
         </button>
       </div>

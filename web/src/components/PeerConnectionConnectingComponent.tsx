@@ -12,7 +12,7 @@ export function PeerConnectionConnectingComponent({
       <NavigationBar
         leadingComponent={
           <button className="btn btn-ghost items-center" onClick={handleCancel}>
-            <ArrowBackIcon fill={"oklch(var(--bc))"} />
+            <ArrowBackIcon className="fill-current h-6 w-6" />
             Cancel
           </button>
         }
