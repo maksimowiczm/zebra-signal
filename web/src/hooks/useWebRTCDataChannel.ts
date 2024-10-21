@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
+const DATA_CHANNEL_NAME = "ZEBRA";
+
 interface Props {
   signalingChannel: WebSocket;
   iceServers: RTCIceServer[];
+  // If true, we will create an offer, otherwise we will wait for an offer
+  shouldOffer: boolean;
 }
 
 type WebRTCPeerResult =
@@ -38,6 +42,7 @@ type WebRTCPeerResult =
 export const useWebRTCDataChannel = ({
   signalingChannel,
   iceServers,
+  shouldOffer,
 }: Props): WebRTCPeerResult => {
   const dataChannel = useRef<RTCDataChannel | undefined>(undefined);
   const peerConnection = useRef<RTCPeerConnection | undefined>(undefined);
@@ -101,18 +106,18 @@ export const useWebRTCDataChannel = ({
 
     const message = JSON.parse(event.data);
 
-    if (message.type === "answer") {
+    if (message.type === "candidate") {
+      return handleCandidate(message, pc);
+    }
+
+    if (message.type === "answer" && shouldOffer) {
       return handleAnswer(message, pc);
     }
 
     // If we got offer we listen for a data channel
-    if (message.type === "offer") {
+    if (message.type === "offer" && !shouldOffer) {
       pc.ondatachannel = (e) => handleDataChannel(e.channel);
       return handleOffer(message, pc, signalingChannel);
-    }
-
-    if (message.type === "candidate") {
-      return handleCandidate(message, pc);
     }
   };
 
@@ -143,17 +148,23 @@ export const useWebRTCDataChannel = ({
     pc.addEventListener("icecandidate", handleIceCandidate);
     signalingChannel.addEventListener("message", handleMessage);
 
-    const dc = pc.createDataChannel("dead_inside", { negotiated: true, id: 0 });
+    const dc = pc.createDataChannel(DATA_CHANNEL_NAME, {
+      id: 0,
+      ordered: true,
+      negotiated: true,
+    });
     handleDataChannel(dc);
 
-    pc.createOffer()
-      .then(async (offer) => {
-        signalingChannel.send(JSON.stringify(offer));
-        await pc.setLocalDescription(offer);
-      })
-      .catch((e) => {
-        console.error("Error creating offer", e);
-      });
+    if (shouldOffer) {
+      pc.createOffer()
+        .then(async (offer) => {
+          signalingChannel.send(JSON.stringify(offer));
+          await pc.setLocalDescription(offer);
+        })
+        .catch((e) => {
+          console.error("Error creating offer", e);
+        });
+    }
 
     return () => {
       pc.close();

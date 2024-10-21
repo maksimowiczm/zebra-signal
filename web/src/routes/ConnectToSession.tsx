@@ -99,6 +99,7 @@ function PeerConnectingComponent({
     iceServers: iceServers.map(({ url }) => ({
       urls: url,
     })),
+    shouldOffer: true,
   });
 
   if (isReady) {

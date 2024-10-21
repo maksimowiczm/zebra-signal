@@ -133,6 +133,7 @@ function SocketReady({
   const { isReady, dataChannel, isConnecting } = useWebRTCDataChannel({
     signalingChannel: socket,
     iceServers: iceServers.map(({ url }) => ({ urls: url })),
+    shouldOffer: false,
   });
 
   // Auto refresh
