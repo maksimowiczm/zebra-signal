@@ -109,7 +109,7 @@ function SessionReady({
   if (isConnecting) {
     return (
       <CreateNewSessionContainer>
-        <SessionLoading token={session.token} />;
+        <SessionLoading token={session.token} />
       </CreateNewSessionContainer>
     );
   }
@@ -135,6 +135,13 @@ function SocketReady({
     iceServers: iceServers.map(({ url }) => ({ urls: url })),
     shouldOffer: false,
   });
+  const [shouldRefresh, setShouldRefresh] = useState(true);
+
+  useEffect(() => {
+    if (shouldRefresh && isConnecting) {
+      setShouldRefresh(false);
+    }
+  }, [isConnecting]);
 
   // Auto refresh
   const timeoutId = useRef<ReturnType<typeof setTimeout>>();
@@ -144,14 +151,20 @@ function SocketReady({
       clearTimeout(timeoutId.current);
     }
   }, [isReady]);
+
   useEffect(() => {
     setTimeLeft(session.expires * 1000 - Date.now());
   }, [session]);
+
   useEffect(() => {
-    const id = setTimeout(refetchSession, timeLeft);
+    if (!shouldRefresh) {
+      return;
+    }
+
+    const id = setTimeout(() => refetchSession(), timeLeft);
     timeoutId.current = id;
     return () => clearTimeout(id);
-  }, [timeLeft]);
+  }, [timeLeft, shouldRefresh]);
 
   // WebRTC ready
   if (isReady) {
