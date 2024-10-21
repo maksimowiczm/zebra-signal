@@ -1,6 +1,6 @@
 import { KeyboardArrowDownIcon } from "@material-icons";
 import { useEffect, useRef, useState } from "react";
-import { Message } from "../../hooks/useZebraSignalDataChannel.ts";
+import { Message } from "../../hooks/network/useZebraSignalDataChannel.ts";
 import { MessageComponent } from "./MessageComponent.tsx";
 
 export function MessagesListComponent({ messages }: { messages: Message[] }) {

@@ -1,4 +1,4 @@
-import { useZebraSignalDataChannel } from "../../hooks/useZebraSignalDataChannel.ts";
+import { useZebraSignalDataChannel } from "../../hooks/network/useZebraSignalDataChannel.ts";
 import { MessageInputComponent } from "./MessageInputComponent.tsx";
 import { MessagesListComponent } from "./MessagesListComponent.tsx";
 

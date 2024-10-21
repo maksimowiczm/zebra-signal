@@ -9,9 +9,10 @@ import { PeerConnectionErrorComponent } from "../components/PeerConnectionErrorC
 import { ProgressBarComponent } from "../components/ProgressBarComponent.tsx";
 import { QRCodeComponent } from "../components/QRCodeComponent.tsx";
 import { IceServersContext } from "../contexts/IceServersContext.tsx";
-import { useWebRTCDataChannel } from "../hooks/useWebRTCDataChannel.ts";
-import { Session, useZebraSession } from "../hooks/useZebraSession.ts";
-import { useZebraSignalSocket } from "../hooks/useZebraSignalSocket.ts";
+import { useWebRTCDataChannel } from "../hooks/network/useWebRTCDataChannel.ts";
+import { Session, useZebraSession } from "../hooks/network/useZebraSession.ts";
+import { useZebraSignalSocket } from "../hooks/network/useZebraSignalSocket.ts";
+import { useSnackbar } from "../hooks/useSnackbar.tsx";
 
 export function CreateNewSession() {
   const { isLoading, isError, session, refetchSession } = useZebraSession();
@@ -175,10 +176,24 @@ function SocketReady({
     return <PeerConnectionConnectingComponent handleCancel={refetchSession} />;
   }
 
+  return <SessionTokenDisplay token={session.token} timeLeft={timeLeft} />;
+}
+
+function SessionTokenDisplay({
+  token,
+  timeLeft,
+}: { token: string; timeLeft: number }) {
+  const snackbar = useSnackbar();
+
+  const handleClick = async () => {
+    await navigator.clipboard.writeText(token);
+    snackbar("Copied to clipboard", "success");
+  };
+
   return (
     <CreateNewSessionContainer>
-      <div>
-        <QRWrapper token={session.token} />
+      <div onClick={handleClick} className="cursor-pointer">
+        <QRWrapper token={token} />
         <ProgressBarComponent length={timeLeft} />
       </div>
     </CreateNewSessionContainer>

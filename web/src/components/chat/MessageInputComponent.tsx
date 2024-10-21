@@ -1,6 +1,9 @@
 import { LockIcon, SendIcon, VisibilityIcon } from "@material-icons";
 import { useRef, useState } from "react";
-import { Message, MessageType } from "../../hooks/useZebraSignalDataChannel.ts";
+import {
+  Message,
+  MessageType,
+} from "../../hooks/network/useZebraSignalDataChannel.ts";
 
 export function MessageInputComponent({
   send,

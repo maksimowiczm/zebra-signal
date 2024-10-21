@@ -1,4 +1,4 @@
-import { useZebraSignalDataChannel } from "../hooks/useZebraSignalDataChannel.ts";
+import { useZebraSignalDataChannel } from "../hooks/network/useZebraSignalDataChannel.ts";
 import { ChatComponent } from "./chat/ChatComponent.tsx";
 
 export function PeerConnectionComponent({

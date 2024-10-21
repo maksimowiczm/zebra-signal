@@ -7,8 +7,8 @@ import { PeerConnectionComponent } from "../components/PeerConnectionComponent.t
 import { PeerConnectionConnectingComponent } from "../components/PeerConnectionConnectingComponent.tsx";
 import { PeerConnectionErrorComponent } from "../components/PeerConnectionErrorComponent.tsx";
 import { IceServersContext } from "../contexts/IceServersContext.tsx";
-import { useWebRTCDataChannel } from "../hooks/useWebRTCDataChannel.ts";
-import { useZebraSignalSocket } from "../hooks/useZebraSignalSocket.ts";
+import { useWebRTCDataChannel } from "../hooks/network/useWebRTCDataChannel.ts";
+import { useZebraSignalSocket } from "../hooks/network/useZebraSignalSocket.ts";
 
 export function ConnectToSession() {
   const [iceOpened, setIceOpened] = useState(false);

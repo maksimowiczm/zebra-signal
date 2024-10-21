@@ -4,7 +4,7 @@ import {
   Message,
   MessageType,
   Who,
-} from "../../hooks/useZebraSignalDataChannel.ts";
+} from "../../hooks/network/useZebraSignalDataChannel.ts";
 
 type MessageComponentProps = Message & {
   shouldHaveHeader: boolean;

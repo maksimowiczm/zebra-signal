@@ -10,3 +10,4 @@ export * from "./QrCode2Icon.tsx";
 export * from "./SendIcon.tsx";
 export * from "./SettingsIcon.tsx";
 export * from "./VisibilityIcon.tsx";
+export * from "./CloseIcon.tsx";
