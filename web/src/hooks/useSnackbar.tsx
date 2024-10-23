@@ -71,8 +71,8 @@ export function SnackbarProvider({ children }: SnackbarProviderProps) {
         // <div className="alert-info alert-error alert-success alert-warning" />
         className={
           `alert alert-${snackbar.variant} ` +
-          `${snackbar.show ? "translate-y-0" : "translate-y-[200%]"} ` +
-          "transition-transform fixed bottom-2 left-0 lg:left-12 w-full lg:w-11/12 " +
+          `${snackbar.show ? "translate-y-0" : "translate-y-[200%]"} transition-transform ` +
+          "fixed bottom-2 mx-2 w-[calc(100%-1rem)] lg:w-[calc(100%-30rem)] lg:mx-60 " +
           "flex justify-between items-center"
         }
       >

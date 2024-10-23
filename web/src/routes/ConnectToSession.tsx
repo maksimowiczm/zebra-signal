@@ -1,14 +1,14 @@
 import { ArrowBackIcon, SettingsIcon } from "@material-icons";
-import { useContext, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { IceServersComponent } from "../components/IceServersComponent.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
 import { PeerConnectionComponent } from "../components/PeerConnectionComponent.tsx";
 import { PeerConnectionConnectingComponent } from "../components/PeerConnectionConnectingComponent.tsx";
 import { PeerConnectionErrorComponent } from "../components/PeerConnectionErrorComponent.tsx";
-import { IceServersContext } from "../contexts/IceServersContext.tsx";
+import { IceServersComponent } from "../components/ice/IceServersComponent.tsx";
 import { useWebRTCDataChannel } from "../hooks/network/useWebRTCDataChannel.ts";
 import { useZebraSignalSocket } from "../hooks/network/useZebraSignalSocket.ts";
+import { useIceServers } from "../hooks/useIceServers.tsx";
 
 export function ConnectToSession() {
   const [iceOpened, setIceOpened] = useState(false);
@@ -92,13 +92,11 @@ function PeerConnectingComponent({
   socket,
   handleCancel,
 }: { socket: WebSocket; handleCancel: () => void }) {
-  const { iceServers } = useContext(IceServersContext);
+  const { iceServers } = useIceServers();
 
   const { isReady, dataChannel } = useWebRTCDataChannel({
     signalingChannel: socket,
-    iceServers: iceServers.map(({ url }) => ({
-      urls: url,
-    })),
+    iceServers,
     shouldOffer: true,
   });
 

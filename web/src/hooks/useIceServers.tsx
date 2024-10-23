@@ -1,30 +1,33 @@
-import React, { createContext, useEffect, useState } from "react";
-
-export interface IceServer {
-  id: string;
-  url: string;
-}
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface IceServersContextProps {
-  iceServers: IceServer[];
-  addIceServer: (url: string) => void;
-  removeIceServer: (id: string) => void;
+  iceServers: RTCIceServer[];
+  addIceServer: (server: RTCIceServer) => void;
+  removeIceServer: (server: RTCIceServer) => void;
   setDefault: () => void;
   isDefault: boolean;
 }
-export const IceServersContext = createContext<IceServersContextProps>({
+const IceServersContext = createContext<IceServersContextProps>({
   iceServers: [],
   addIceServer: () => {},
   removeIceServer: () => {},
   setDefault: () => {},
   isDefault: false,
 });
+
 const LOCAL_STORAGE_KEY = "ice-servers";
+const defaultIce: RTCIceServer[] = [
+  {
+    urls: ["stun:stun.l.google.com:19302"],
+    username: undefined,
+    credential: undefined,
+  },
+];
+
 export function IceServersProvider({
   children,
 }: { children: React.ReactNode }) {
-  const [iceServers, setIceServers] = useState<IceServer[]>([]);
-  const defaultIce = [{ id: "1", url: "stun:stun.l.google.com:19302" }];
+  const [iceServers, setIceServers] = useState<RTCIceServer[]>([]);
 
   useEffect(() => {
     const savedIceServers = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -35,19 +38,22 @@ export function IceServersProvider({
     }
   }, []);
 
-  const addIceServer = (url: string) => {
-    const id = Math.random().toString(36).slice(2);
-    const newIceServers = [...iceServers, { id, url }];
+  const addIceServer = (server: RTCIceServer) => {
+    const newIceServers = [...iceServers, server];
     setIceServers(newIceServers);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIceServers));
   };
-  const removeIceServer = (id: string) => {
-    const newIceServers = iceServers.filter((iceServer) => iceServer.id !== id);
+
+  const removeIceServer = (server: RTCIceServer) => {
+    const newIceServers = iceServers.filter(
+      (iceServer) => iceServer.urls[0] !== server.urls[0],
+    );
     setIceServers(newIceServers);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newIceServers));
   };
+
   const setDefault = () => {
-    setIceServers([...defaultIce]);
+    setIceServers(defaultIce);
     localStorage.removeItem(LOCAL_STORAGE_KEY);
   };
 
@@ -58,11 +64,18 @@ export function IceServersProvider({
         addIceServer,
         removeIceServer,
         setDefault,
-        isDefault:
-          iceServers[0]?.url === defaultIce[0].url && iceServers.length === 1,
+        isDefault: JSON.stringify(iceServers) === JSON.stringify(defaultIce),
       }}
     >
       {children}
     </IceServersContext.Provider>
   );
 }
+
+export const useIceServers = () => {
+  const context = useContext(IceServersContext);
+  if (context === undefined) {
+    throw new Error("useIceServers must be used within a IceServersProvider");
+  }
+  return context;
+};

@@ -1,17 +1,17 @@
 import { ArrowBackIcon, SettingsIcon } from "@material-icons";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { IceServersComponent } from "../components/IceServersComponent.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
 import { PeerConnectionComponent } from "../components/PeerConnectionComponent.tsx";
 import { PeerConnectionConnectingComponent } from "../components/PeerConnectionConnectingComponent.tsx";
 import { PeerConnectionErrorComponent } from "../components/PeerConnectionErrorComponent.tsx";
 import { ProgressBarComponent } from "../components/ProgressBarComponent.tsx";
 import { QRCodeComponent } from "../components/QRCodeComponent.tsx";
-import { IceServersContext } from "../contexts/IceServersContext.tsx";
+import { IceServersComponent } from "../components/ice/IceServersComponent.tsx";
 import { useWebRTCDataChannel } from "../hooks/network/useWebRTCDataChannel.ts";
 import { Session, useZebraSession } from "../hooks/network/useZebraSession.ts";
 import { useZebraSignalSocket } from "../hooks/network/useZebraSignalSocket.ts";
+import { useIceServers } from "../hooks/useIceServers.tsx";
 import { useSnackbar } from "../hooks/useSnackbar.tsx";
 
 export function CreateNewSession() {
@@ -130,10 +130,10 @@ function SocketReady({
   refetchSession,
 }: { socket: WebSocket; session: Session; refetchSession: () => void }) {
   // WebRTC
-  const { iceServers } = useContext(IceServersContext);
+  const { iceServers } = useIceServers();
   const { isReady, dataChannel, isConnecting } = useWebRTCDataChannel({
     signalingChannel: socket,
-    iceServers: iceServers.map(({ url }) => ({ urls: url })),
+    iceServers,
     shouldOffer: false,
   });
   const [shouldRefresh, setShouldRefresh] = useState(true);

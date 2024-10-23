@@ -1,8 +1,8 @@
 import { ConversionPathIcon, QrCode2Icon, SettingsIcon } from "@material-icons";
 import React, { useState } from "react";
 import { Link, LinkProps } from "react-router-dom";
-import { IceServersComponent } from "../components/IceServersComponent.tsx";
 import { NavigationBar } from "../components/NavigationBar.tsx";
+import { IceServersComponent } from "../components/ice/IceServersComponent.tsx";
 
 export function Home() {
   const [iceOpened, setIceOpened] = useState(false);
