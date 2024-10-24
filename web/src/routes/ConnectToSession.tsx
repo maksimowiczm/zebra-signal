@@ -12,13 +12,25 @@ import { useIceServers } from "../hooks/useIceServers.tsx";
 
 export function ConnectToSession() {
   const [iceOpened, setIceOpened] = useState(false);
+
+  const { isLoading, iceServers } = useIceServers();
   const [token, setToken] = useState<string | undefined>(undefined);
   const handleCancel = () => setToken(undefined);
 
   const input = useRef<HTMLInputElement>(null);
 
+  if (isLoading) {
+    return <div>todo</div>;
+  }
+
   if (token) {
-    return <TokenReady token={token} handleCancel={handleCancel} />;
+    return (
+      <TokenReady
+        iceServers={iceServers}
+        token={token}
+        handleCancel={handleCancel}
+      />
+    );
   }
 
   if (iceOpened) {
@@ -70,9 +82,14 @@ export function ConnectToSession() {
 }
 
 function TokenReady({
+  iceServers,
   token,
   handleCancel,
-}: { token: string; handleCancel: () => void }) {
+}: {
+  iceServers: RTCIceServer[];
+  token: string;
+  handleCancel: () => void;
+}) {
   const { isConnecting, isError, socket } = useZebraSignalSocket(token);
 
   if (isError) {
@@ -84,16 +101,23 @@ function TokenReady({
   }
 
   return (
-    <PeerConnectingComponent socket={socket} handleCancel={handleCancel} />
+    <PeerConnectingComponent
+      iceServers={iceServers}
+      socket={socket}
+      handleCancel={handleCancel}
+    />
   );
 }
 
 function PeerConnectingComponent({
+  iceServers,
   socket,
   handleCancel,
-}: { socket: WebSocket; handleCancel: () => void }) {
-  const { iceServers } = useIceServers();
-
+}: {
+  iceServers: RTCIceServer[];
+  socket: WebSocket;
+  handleCancel: () => void;
+}) {
   const { isReady, dataChannel } = useWebRTCDataChannel({
     signalingChannel: socket,
     iceServers,

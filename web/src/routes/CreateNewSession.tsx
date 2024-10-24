@@ -98,6 +98,7 @@ function SessionReady({
   refetchSession: () => void;
 }) {
   const { isConnecting, isError, socket } = useZebraSignalSocket(session.token);
+  const { isLoading, iceServers } = useIceServers();
 
   if (isError) {
     return (
@@ -107,7 +108,7 @@ function SessionReady({
     );
   }
 
-  if (isConnecting) {
+  if (isConnecting || isLoading) {
     return (
       <CreateNewSessionContainer>
         <SessionLoading token={session.token} />
@@ -117,6 +118,7 @@ function SessionReady({
 
   return (
     <SocketReady
+      iceServers={iceServers}
       socket={socket}
       session={session}
       refetchSession={refetchSession}
@@ -125,12 +127,17 @@ function SessionReady({
 }
 
 function SocketReady({
+  iceServers,
   socket,
   session,
   refetchSession,
-}: { socket: WebSocket; session: Session; refetchSession: () => void }) {
+}: {
+  iceServers: RTCIceServer[];
+  socket: WebSocket;
+  session: Session;
+  refetchSession: () => void;
+}) {
   // WebRTC
-  const { iceServers } = useIceServers();
   const { isReady, dataChannel, isConnecting } = useWebRTCDataChannel({
     signalingChannel: socket,
     iceServers,

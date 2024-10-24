@@ -39,7 +39,7 @@ function IceServersList({
   handleAdd: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement | null>(null);
-  const { iceServers, removeIceServer } = useIceServers();
+  const { iceServers, removeIceServer, isLoading } = useIceServers();
 
   const { setDefault } = useIceServers();
   const snackbar = useSnackbar();
@@ -75,13 +75,15 @@ function IceServersList({
             <AddIcon className="fill-current w-6 h-6" />
           </div>
         </div>
-        {iceServers.map((server) => (
-          <IceServer
-            key={server.urls[0]}
-            url={server.urls[0]}
-            handleDelete={() => removeIceServer(server)}
-          />
-        ))}
+        {isLoading
+          ? "Loading..."
+          : iceServers.map((server) => (
+              <IceServer
+                key={server.urls[0]}
+                url={server.urls[0]}
+                handleDelete={() => removeIceServer(server)}
+              />
+            ))}
       </div>
       <UseDefaultDialog ref={dialog} handleConfirm={handleDefault} />
     </div>
