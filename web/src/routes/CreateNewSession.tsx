@@ -1,4 +1,4 @@
-import { ArrowBackIcon, SettingsIcon } from "@material-icons";
+import { ArrowBackIcon } from "@material-icons";
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { NavigationBar } from "../components/NavigationBar.tsx";
@@ -7,7 +7,6 @@ import { PeerConnectionConnectingComponent } from "../components/PeerConnectionC
 import { PeerConnectionErrorComponent } from "../components/PeerConnectionErrorComponent.tsx";
 import { ProgressBarComponent } from "../components/ProgressBarComponent.tsx";
 import { QRCodeComponent } from "../components/QRCodeComponent.tsx";
-import { IceServersComponent } from "../components/ice/IceServersComponent.tsx";
 import { useWebRTCDataChannel } from "../hooks/network/useWebRTCDataChannel.ts";
 import { Session, useZebraSession } from "../hooks/network/useZebraSession.ts";
 import { useZebraSignalSocket } from "../hooks/network/useZebraSignalSocket.ts";
@@ -39,12 +38,6 @@ export function CreateNewSession() {
 function CreateNewSessionContainer({
   children,
 }: { children: React.ReactNode }) {
-  const [iceOpened, setIceOpened] = useState(false);
-
-  if (iceOpened) {
-    return <IceServersComponent onBack={() => setIceOpened(false)} />;
-  }
-
   return (
     <>
       <NavigationBar
@@ -55,15 +48,6 @@ function CreateNewSessionContainer({
               Back
             </button>
           </Link>
-        }
-        trailingComponent={
-          <button
-            className="btn btn-ghost items-center"
-            onClick={() => setIceOpened(true)}
-          >
-            <SettingsIcon className="fill-current h-6 w-6" />
-            ICE Servers
-          </button>
         }
       />
       <div className="relative flex flex-col justify-center h-full items-center">
@@ -77,7 +61,7 @@ function SessionLoading({ token = "zebra" }: { token?: string }) {
   return (
     <div className="relative flex justify-center items-center">
       <div>
-        <QRWrapper token={token} isLoading={true} />
+        <QRCode token={token} isLoading={true} />
         <div className="blur">
           <ProgressBarComponent length={1_000_000_000} />
         </div>
@@ -176,10 +160,14 @@ function SocketReady({
     return <PeerConnectionConnectingComponent handleCancel={refetchSession} />;
   }
 
-  return <SessionTokenDisplay token={session.token} timeLeft={timeLeft} />;
+  return (
+    <CreateNewSessionContainer>
+      <SessionToken token={session.token} timeLeft={timeLeft} />
+    </CreateNewSessionContainer>
+  );
 }
 
-function SessionTokenDisplay({
+function SessionToken({
   token,
   timeLeft,
 }: { token: string; timeLeft: number }) {
@@ -191,16 +179,14 @@ function SessionTokenDisplay({
   };
 
   return (
-    <CreateNewSessionContainer>
-      <div onClick={handleClick} className="cursor-pointer">
-        <QRWrapper token={token} />
-        <ProgressBarComponent length={timeLeft} />
-      </div>
-    </CreateNewSessionContainer>
+    <div onClick={handleClick} className="cursor-pointer">
+      <QRCode token={token} />
+      <ProgressBarComponent length={timeLeft} />
+    </div>
   );
 }
 
-function QRWrapper({
+function QRCode({
   token,
   isLoading = false,
 }: { token: string; isLoading?: boolean }) {
