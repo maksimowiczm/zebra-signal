@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const DATA_CHANNEL_NAME = "ZEBRA";
+const DATA_CHANNEL_ID = 0;
 
 interface Props {
   signalingChannel: WebSocket;
@@ -149,7 +150,7 @@ export const useWebRTCDataChannel = ({
     signalingChannel.addEventListener("message", handleMessage);
 
     const dc = pc.createDataChannel(DATA_CHANNEL_NAME, {
-      id: 0,
+      id: DATA_CHANNEL_ID,
       ordered: true,
       negotiated: true,
     });
