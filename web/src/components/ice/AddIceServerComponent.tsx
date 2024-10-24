@@ -65,6 +65,7 @@ function IceServerForm({
             type="text"
             className="input input-bordered w-full"
             onChange={(e) => setUrl(e.target.value)}
+            autoComplete="url"
             required
           />
         </div>
@@ -119,6 +120,7 @@ function BasicAuthentication({
           type="text"
           className="input input-bordered w-full"
           onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
           required
         />
       </div>
@@ -133,6 +135,7 @@ function BasicAuthentication({
           type="password"
           className="input input-bordered w-full"
           onChange={(e) => setCredential(e.target.value)}
+          autoComplete="current-password"
           required
         />
       </div>
