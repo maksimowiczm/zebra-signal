@@ -30,8 +30,10 @@ function IceServerForm({
 
   const {
     setUrl,
+    isUrlInvalid,
     authenticationMethod,
     setAuthenticationMethod,
+    isAuthenticationMethodInvalid,
     handleAddIceServer,
   } = iceServerForm;
 
@@ -48,8 +50,9 @@ function IceServerForm({
       className="flex flex-col h-full w-full px-4 pt-4 pb-2 md:w-1/2 lg:w-1/3"
       onSubmit={(e) => {
         e.preventDefault();
-        handleAddIceServer();
-        onSubmitted();
+        if (handleAddIceServer()) {
+          onSubmitted();
+        }
       }}
     >
       <div className="text-2xl">Add ICE Server</div>
@@ -63,7 +66,7 @@ function IceServerForm({
           <input
             id="url"
             type="text"
-            className="input input-bordered w-full"
+            className={`input input-bordered w-full ${isUrlInvalid ? "input-error" : ""}`}
             onChange={(e) => setUrl(e.target.value)}
             autoComplete="url"
             required
@@ -77,11 +80,11 @@ function IceServerForm({
           </div>
           <select
             id="method"
-            className="select select-bordered w-full"
+            className={`select select-bordered w-full ${isAuthenticationMethodInvalid ? "border-error" : ""}`}
             onChange={handleMethodChange}
           >
-            <option>None</option>
-            <option>Basic</option>
+            <option selected={authenticationMethod === "NONE"}>None</option>
+            <option selected={authenticationMethod === "BASIC"}>Basic</option>
           </select>
         </div>
         {authenticationMethod === "BASIC" && (

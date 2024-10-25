@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useIceServers } from "./useIceServers.tsx";
 
 type AuthenticationMethod = "BASIC" | "NONE";
@@ -6,11 +6,13 @@ type AuthenticationMethod = "BASIC" | "NONE";
 interface UseIceServerFormResultBase {
   authenticationMethod: AuthenticationMethod;
   setAuthenticationMethod: (method: AuthenticationMethod) => void;
+  isAuthenticationMethodInvalid: boolean;
 
   url: string;
   setUrl: (url: string) => void;
+  isUrlInvalid: boolean;
 
-  handleAddIceServer: () => void;
+  handleAddIceServer: () => boolean;
 }
 
 interface UseIceServerFormNoneAuthenticationResult
@@ -37,13 +39,31 @@ export function useIceServerForm(): UseIceServerFormResult {
   const { addIceServer } = useIceServers();
 
   const [url, setUrl] = useState("");
+  const [isUrlInvalid, setIsUrlInvalid] = useState(false);
   const [authenticationMethod, setAuthenticationMethod] =
     useState<AuthenticationMethod>("NONE");
+  const [isAuthenticationMethodInvalid, setIsAuthenticationMethodInvalid] =
+    useState(false);
+  useEffect(() => {
+    if (url.startsWith("turn:")) {
+      setAuthenticationMethod("BASIC");
+    }
+  }, [url]);
 
   const [username, setUsername] = useState("");
   const [credential, setCredential] = useState("");
 
   const handleAddIceServer = () => {
+    if (!url.startsWith("turn:") && !url.startsWith("stun:")) {
+      setIsUrlInvalid(true);
+      return false;
+    }
+
+    if (url.startsWith("turn:") && authenticationMethod !== "BASIC") {
+      setIsAuthenticationMethodInvalid(true);
+      return false;
+    }
+
     const iceServer: RTCIceServer = {
       urls: [url],
       username: authenticationMethod === "BASIC" ? username : undefined,
@@ -51,14 +71,20 @@ export function useIceServerForm(): UseIceServerFormResult {
     };
 
     addIceServer(iceServer);
+
+    return true;
   };
 
   const base = {
     url,
     setUrl,
-    setAuthenticationMethod,
-    handleAddIceServer,
+    isUrlInvalid,
+
     authenticationMethod,
+    setAuthenticationMethod,
+    isAuthenticationMethodInvalid,
+
+    handleAddIceServer,
   };
 
   if (authenticationMethod === "NONE") {
