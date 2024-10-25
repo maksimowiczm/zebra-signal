@@ -86,7 +86,7 @@ function SessionReady({
   if (isError) {
     return (
       <CreateNewSessionContainer>
-        <PeerConnectionErrorComponent />
+        <PeerConnectionErrorComponent onRetry={refetchSession} />
       </CreateNewSessionContainer>
     );
   }
@@ -115,7 +115,7 @@ function SocketReady({
 }: { socket: WebSocket; session: Session; refetchSession: () => void }) {
   // WebRTC
   const { iceServers } = useIceServers();
-  const { isReady, dataChannel, isConnecting } = useWebRTCDataChannel({
+  const { isReady, dataChannel, isConnecting, isError } = useWebRTCDataChannel({
     signalingChannel: socket,
     iceServers,
     shouldOffer: false,
@@ -123,10 +123,14 @@ function SocketReady({
   const [shouldRefresh, setShouldRefresh] = useState(true);
 
   useEffect(() => {
-    if (shouldRefresh && isConnecting) {
+    if (!shouldRefresh) {
+      return;
+    }
+
+    if (isConnecting || isError) {
       setShouldRefresh(false);
     }
-  }, [isConnecting]);
+  }, [isConnecting, isError]);
 
   // Auto refresh
   const timeoutId = useRef<ReturnType<typeof setTimeout>>();
@@ -150,6 +154,10 @@ function SocketReady({
     timeoutId.current = id;
     return () => clearTimeout(id);
   }, [timeLeft, shouldRefresh]);
+
+  if (isError) {
+    return <PeerConnectionErrorComponent onRetry={refetchSession} />;
+  }
 
   // WebRTC ready
   if (isReady) {

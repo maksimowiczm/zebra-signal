@@ -76,7 +76,7 @@ function TokenReady({
   const { isConnecting, isError, socket } = useZebraSignalSocket(token);
 
   if (isError) {
-    return <PeerConnectionErrorComponent />;
+    return <PeerConnectionErrorComponent onRetry={handleCancel} />;
   }
 
   if (isConnecting) {
@@ -94,11 +94,15 @@ function PeerConnectingComponent({
 }: { socket: WebSocket; handleCancel: () => void }) {
   const { iceServers } = useIceServers();
 
-  const { isReady, dataChannel } = useWebRTCDataChannel({
+  const { isReady, dataChannel, isError } = useWebRTCDataChannel({
     signalingChannel: socket,
     iceServers,
     shouldOffer: true,
   });
+
+  if (isError) {
+    return <PeerConnectionErrorComponent onRetry={handleCancel} />;
+  }
 
   if (isReady) {
     return <PeerConnectionComponent dataChannel={dataChannel} />;

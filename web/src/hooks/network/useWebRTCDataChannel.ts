@@ -17,6 +17,7 @@ type WebRTCPeerResult =
       isReady: false;
       isConnecting: false;
       dataChannel: undefined;
+      isError: false;
     }
   // Waiting for an offer or answer
   | {
@@ -24,6 +25,7 @@ type WebRTCPeerResult =
       isReady: false;
       isConnecting: false;
       dataChannel: undefined;
+      isError: false;
     }
   // Peer is connecting, waiting for data channel
   | {
@@ -31,6 +33,7 @@ type WebRTCPeerResult =
       isReady: false;
       isConnecting: true;
       dataChannel: undefined;
+      isError: false;
     }
   // Ready
   | {
@@ -38,6 +41,15 @@ type WebRTCPeerResult =
       isReady: true;
       isConnecting: false;
       dataChannel: RTCDataChannel;
+      isError: false;
+    }
+  // Error
+  | {
+      peerConnection: undefined;
+      isReady: false;
+      isConnecting: false;
+      dataChannel: undefined;
+      isError: true;
     };
 
 export const useWebRTCDataChannel = ({
@@ -49,32 +61,33 @@ export const useWebRTCDataChannel = ({
   const peerConnection = useRef<RTCPeerConnection | undefined>(undefined);
   const [isReady, setIsReady] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   const handleDataChannel = (dc: RTCDataChannel) => {
     const handleOpen = () => {
       setIsReady(true);
     };
-    const handleClose = () => {
-      // todo
-    };
+
     const handleError = (e: Event) => {
       console.error("Data channel error", e);
     };
 
     dataChannel.current?.close();
     dataChannel.current?.removeEventListener("open", handleOpen);
-    dataChannel.current?.removeEventListener("close", handleClose);
     dataChannel.current?.removeEventListener("error", handleError);
 
     dataChannel.current = dc;
     dc.addEventListener("open", handleOpen);
-    dc.addEventListener("close", handleClose);
     dc.addEventListener("error", handleError);
   };
 
   const handleIceCandidate = (event: RTCPeerConnectionIceEvent) => {
     try {
-      if (!event.candidate) {
+      if (
+        !event.candidate ||
+        !event.candidate.candidate ||
+        event.candidate.candidate === ""
+      ) {
         return;
       }
 
@@ -135,6 +148,13 @@ export const useWebRTCDataChannel = ({
     ) {
     }
 
+    if (pc.connectionState === "failed") {
+      signalingChannel.close();
+      pc.close();
+      peerConnection.current = undefined;
+      setIsError(true);
+    }
+
     // Close the signaling channel if we are connected
     if (pc.connectionState === "connected") {
       signalingChannel.close();
@@ -178,11 +198,22 @@ export const useWebRTCDataChannel = ({
     };
   }, [signalingChannel]);
 
+  if (isError) {
+    return {
+      peerConnection: undefined,
+      isReady: false,
+      dataChannel: undefined,
+      isConnecting: false,
+      isError,
+    };
+  }
+
   return <WebRTCPeerResult>{
     peerConnection: peerConnection.current,
     isReady,
     dataChannel: dataChannel.current,
     isConnecting: isReady ? false : isConnecting,
+    isError,
   };
 };
 
