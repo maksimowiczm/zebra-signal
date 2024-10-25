@@ -11,7 +11,10 @@ export function ChatComponent({
     <div className="h-full w-full flex justify-center">
       <div className="w-full lg:w-2/3 flex flex-col">
         <MessagesListComponent messages={messages} />
-        {isConnected && <MessageInputComponent send={send} />}
+        {
+          // @ts-ignore this is xD
+          <MessageInputComponent isConnected={isConnected} send={send} />
+        }
       </div>
     </div>
   );
