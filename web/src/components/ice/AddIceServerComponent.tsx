@@ -82,9 +82,10 @@ function IceServerForm({
             id="method"
             className={`select select-bordered w-full ${isAuthenticationMethodInvalid ? "border-error" : ""}`}
             onChange={handleMethodChange}
+            value={authenticationMethod === "BASIC" ? "Basic" : "None"}
           >
-            <option selected={authenticationMethod === "NONE"}>None</option>
-            <option selected={authenticationMethod === "BASIC"}>Basic</option>
+            <option>None</option>
+            <option>Basic</option>
           </select>
         </div>
         {authenticationMethod === "BASIC" && (
