@@ -34,6 +34,8 @@ export function MessageInputComponent({
     inputRef.current.value = "";
   };
 
+  const handlePrivateSwitch = () => setIsPrivate((p) => !p);
+
   return (
     <div className="join w-full flex py-2 px-2">
       <div
@@ -45,7 +47,12 @@ export function MessageInputComponent({
             `btn ${!isConnected ? "btn-disabled" : ""} ` +
             `no-animation swap join-item ${isPrivate ? "swap-active" : ""}`
           }
-          onClick={() => setIsPrivate((p) => !p)}
+          onClick={handlePrivateSwitch}
+          onTouchEnd={(e) => {
+            // prevent losing focus on input when clicking on switch
+            e.preventDefault();
+            handlePrivateSwitch();
+          }}
         >
           <VisibilityIcon className="swap-off fill-current w-6 h-6" />
           <LockIcon className="swap-on tooltip fill-current w-6 h-6" />
@@ -54,7 +61,7 @@ export function MessageInputComponent({
       <input
         className="input input-bordered join-item grow"
         ref={inputRef}
-        type="text"
+        type={isPrivate ? "password" : "text"}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             handleSend();
@@ -65,8 +72,13 @@ export function MessageInputComponent({
       />
       <button
         className="btn join-item"
-        onClick={handleSend}
         disabled={!isConnected}
+        onClick={handleSend}
+        onTouchEnd={(e) => {
+          // prevent losing focus on input when clicking on button
+          e.preventDefault();
+          handleSend();
+        }}
       >
         <SendIcon className="fill-current w-6 h-6" />
       </button>

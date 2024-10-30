@@ -53,6 +53,11 @@ export function MessagesListComponent({ messages }: { messages: Message[] }) {
             "overflow-y-visible max-h-8 max-w-8"
           }
           onClick={handleScrollBottom}
+          onTouchEnd={(e) => {
+            // prevent losing focus on input when clicking on switch
+            e.preventDefault();
+            handleScrollBottom();
+          }}
         >
           <KeyboardArrowDownIcon fill="oklch(var(--nc))" />
         </div>

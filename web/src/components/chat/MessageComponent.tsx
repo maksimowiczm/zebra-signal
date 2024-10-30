@@ -61,8 +61,6 @@ function PrivateMessageComponent({
 
   if (header && description) {
     header = `${header} - ${description}`;
-  } else {
-    header = description ? description : undefined;
   }
 
   const privateContent = "●".repeat(content.length);
