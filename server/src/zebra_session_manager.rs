@@ -1,9 +1,9 @@
+use crate::generator::Generator;
 use axum::extract::ws::WebSocket;
 use futures::StreamExt;
-use rand::distributions::Alphanumeric;
-use rand::Rng;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 use std::sync::{Arc, Mutex};
 use tokio::sync::oneshot;
 
@@ -13,15 +13,17 @@ pub struct Connection {
 }
 
 #[derive(Clone)]
-pub struct ZebraContainer {
-    connections: Arc<Mutex<HashMap<String, Connection>>>,
+pub struct ZebraSessionManager<G> {
+    sequence: Arc<Mutex<G>>,
+    connections: Arc<Mutex<HashMap<u32, Connection>>>,
     session_timeout: u64,
     socket_timeout: u64,
 }
 
-impl ZebraContainer {
-    pub fn with_timeouts(session_timeout: u64, socket_timeout: u64) -> Self {
+impl<G> ZebraSessionManager<G> {
+    pub fn new(session_timeout: u64, socket_timeout: u64, sequence: G) -> Self {
         Self {
+            sequence: Arc::new(Mutex::new(sequence)),
             connections: Arc::new(Mutex::new(HashMap::new())),
             session_timeout,
             socket_timeout,
@@ -35,36 +37,59 @@ pub enum ConnectionError {
 
 #[derive(Serialize)]
 pub struct Session {
-    token: String,
-    expires: u64,
+    // using u32 because JS supports only f64, which makes integer max value 2^53
+    token: u32,
+    expires: u32,
 }
 
-impl ZebraContainer {
-    pub fn create_session(&self) -> Session {
+pub enum CreateSessionError {
+    SessionLimitReached,
+    SequenceError,
+}
+
+impl<G> ZebraSessionManager<G>
+where
+    G: Generator,
+{
+    fn get_next_token(generator: &mut G) -> Result<u32, CreateSessionError> {
+        let mut hasher = std::hash::DefaultHasher::new();
+
+        let next = generator.next().ok_or_else(|| {
+            tracing::error!("Sequence failed to generate next value");
+            CreateSessionError::SequenceError
+        })?;
+
+        next.hash(&mut hasher);
+
+        // make sure the hash is 32 bits
+        Ok((hasher.finish() & 0xFFFFFFFF) as u32)
+    }
+
+    pub fn create_session(&mut self) -> Result<Session, CreateSessionError> {
         let mut connections = self
             .connections
             .lock()
             .expect("No other locks should panic");
 
-        let mut token = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(8)
-            .map(char::from)
-            .collect::<String>();
+        let mut sequence = self.sequence.lock().expect("No other locks should panic");
 
-        // Ensure token is unique
+        let mut token = Self::get_next_token(&mut sequence)?;
+
+        let mut tries = 0;
+        // this is a very unlikely event, but just in case
         while connections.contains_key(&token) {
-            token = rand::thread_rng()
-                .sample_iter(&Alphanumeric)
-                .take(8)
-                .map(char::from)
-                .collect::<String>();
+            if tries > 10 {
+                return Err(CreateSessionError::SessionLimitReached);
+            }
+            tries += 1;
+
+            token = Self::get_next_token(&mut sequence)?;
         }
 
         let (cancel_tx, cancel) = oneshot::channel();
 
         connections.insert(
-            token.clone(),
+            token,
             Connection {
                 socket: None,
                 cancel_tx,
@@ -76,7 +101,6 @@ impl ZebraContainer {
         // Remove session after timeout
         {
             let connections = self.connections.clone();
-            let token = token.clone();
             let timeout = self.session_timeout;
             tokio::spawn(async move {
                 tokio::select! {
@@ -110,14 +134,10 @@ impl ZebraContainer {
             .try_into()
             .expect("Time shouldn't go backwards");
 
-        Session { token, expires }
+        Ok(Session { token, expires })
     }
 
-    pub fn handle_connection(
-        &self,
-        token: String,
-        socket: WebSocket,
-    ) -> Result<(), ConnectionError> {
+    pub fn handle_connection(&self, token: u32, socket: WebSocket) -> Result<(), ConnectionError> {
         let mut connections = self
             .connections
             .lock()
