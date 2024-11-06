@@ -20,7 +20,7 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div className="h-dvh w-dvw flex flex-col">
+    <div className="h-full w-full flex flex-col">
       <RouterProvider router={router} />
     </div>
   );

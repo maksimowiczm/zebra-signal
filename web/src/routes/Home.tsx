@@ -32,7 +32,7 @@ export function Home() {
           </MenuItem>
           <MenuItem to="/connect">
             <ConversionPathIcon className="fill-current" />
-            <MenuItemLabel label={"Connect to the session"} />
+            <MenuItemLabel label="Connect to the session" />
           </MenuItem>
         </div>
       </div>
@@ -43,7 +43,7 @@ export function Home() {
 function MenuItem(props: LinkProps & React.RefAttributes<HTMLAnchorElement>) {
   return (
     <Link
-      className="w-3/5 md:w-1/2 flex flex-col justify-between items-center rounded-3xl cursor-pointer px-4 m-4 hover:bg-base-200"
+      className="w-2/5 md:w-1/2 flex flex-col justify-between items-center rounded-3xl cursor-pointer px-4 m-4 hover:bg-base-200"
       {...props}
     ></Link>
   );

@@ -125,7 +125,7 @@ function CopyIcon({
       data-tip="Copy"
       onClick={handleCopy}
     >
-      <ContentCopyIcon className="fill-current w-6 h-6" />
+      <ContentCopyIcon className="fill-base-content w-6 h-6" />
     </div>
   ) : (
     <div className="rounded-full p-1">
